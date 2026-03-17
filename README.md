@@ -1,5 +1,7 @@
 # Art Prompt Generator
 
+[![CI](https://github.com/valcriss/art-prompt-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/valcriss/art-prompt-generator/actions/workflows/ci.yml)
+
 Creative prompt studio built with Vue 3, TypeScript, Vite and Tailwind CSS.
 
 The product helps artists and AI image-makers turn a rough idea into a richer prompt by guiding them through subject, environment, atmosphere, lighting, composition and storytelling details. Phase 1 is frontend-only and stores everything locally in the browser through repository abstractions designed to be replaceable by API-backed implementations later.

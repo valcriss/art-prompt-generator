@@ -17,6 +17,10 @@ import {
 import { createEmptyPromptProject, clonePromptProject } from '../domain/promptFactory'
 import { createEnrichmentSuggestions } from '../domain/promptSuggestions'
 import {
+  customGuidedOptionUsesMediumScope,
+  suggestCustomGuidedGroup,
+} from '../domain/guidedVocabulary'
+import {
   applyTemplateProfileToProject,
   deriveTemplateProfileFromProject,
   getTemplateDraftProfileValues,
@@ -28,10 +32,15 @@ import { LocalPromptTemplateRepository } from '../repositories/LocalPromptTempla
 import { LocalUserPreferenceRepository } from '../repositories/LocalUserPreferenceRepository'
 import type {
   AppLocale,
+  CustomGuidedOption,
+  GuidedGroup,
+  GuidedVocabularyKey,
   LibraryElement,
+  PersonalVocabularyPreferences,
   PromptProject,
   PromptTemplate,
   StudioQuickAccessPreferences,
+  StudioWorkspacePreferences,
 } from '../types/models'
 import { copyTextToClipboard } from '../utils/clipboard'
 import { downloadFile } from '../utils/download'
@@ -145,6 +154,40 @@ const defaultStudioQuickAccessPreferences = (): StudioQuickAccessPreferences => 
   quickLibraryFilter: 'all',
 })
 
+const defaultPersonalVocabularyPreferences = (): PersonalVocabularyPreferences => ({
+  search: '',
+  groupFilter: 'all',
+  sort: 'smart',
+})
+
+const defaultStudioWorkspacePreferences = (): StudioWorkspacePreferences => ({
+  historySearch: '',
+  historyMediumFilter: 'all',
+  historySort: 'recent',
+  librarySearch: '',
+  libraryFilter: 'all',
+  librarySort: 'recent',
+  templateSearch: '',
+  templateFilter: 'all',
+  subjectLibrarySearch: '',
+})
+
+type AddCustomGuidedOptionInput = {
+  key: GuidedVocabularyKey
+  label: string
+  value: string
+  locale: AppLocale
+  medium?: PromptProject['medium']
+}
+
+type UpdateCustomGuidedOptionInput = {
+  id: string
+  label: string
+  value: string
+  locale: AppLocale
+  group: GuidedGroup
+}
+
 let studioSingleton: ReturnType<typeof createStudioStore> | null = null
 
 const createStudioStore = () => {
@@ -152,6 +195,7 @@ const createStudioStore = () => {
   const projects = ref<PromptProject[]>([])
   const libraryElements = ref<LibraryElement[]>([])
   const templates = ref<PromptTemplate[]>([])
+  const customGuidedOptions = ref<CustomGuidedOption[]>([])
 
   const historyFilter = ref('')
   const historyMediumFilter = ref<HistoryFilter>('all')
@@ -172,7 +216,11 @@ const createStudioStore = () => {
   const quickTemplateFilter = ref<QuickTemplateFilter>('all')
   const quickLibrarySearch = ref('')
   const quickLibraryFilter = ref<QuickLibraryFilter>('all')
+  const subjectLibrarySearch = ref('')
   const selectedTemplateId = ref<string | null>(null)
+  const personalVocabularySearch = ref('')
+  const personalVocabularyGroupFilter = ref<'all' | GuidedGroup>('all')
+  const personalVocabularySort = ref<'smart' | 'recent' | 'field' | 'group' | 'name'>('smart')
   const pendingLibraryInsert = ref<PendingLibraryInsert>({
     elementId: null,
     selectedMappingIds: [],
@@ -181,7 +229,6 @@ const createStudioStore = () => {
   const locale = ref<AppLocale>('en')
   const toast = ref('')
   const lastCreativeAction = ref('')
-  const suggestions = createEnrichmentSuggestions()
   const initialized = ref(false)
 
   const linkedLibraryElements = computed(() =>
@@ -496,6 +543,12 @@ const createStudioStore = () => {
     createContextualBundles(currentProject.value),
   )
 
+  const suggestions = computed(() =>
+    createEnrichmentSuggestions(currentProject.value, {
+      suppressBundleOverlap: contextualBundles.value.length > 0,
+    }),
+  )
+
   const templateDraftProjectPreview = computed(() =>
     applyTemplateProfileToProject(
       cloneProjectState(templateDraftProject.value),
@@ -539,23 +592,52 @@ const createStudioStore = () => {
   const ensureLoaded = async () => {
     if (initialized.value) return
 
-    const [savedProjects, savedLibrary, savedTemplates, savedLocale, savedQuickAccess] = await Promise.all([
+    const [
+      savedProjects,
+      savedLibrary,
+      savedTemplates,
+      savedLocale,
+      savedQuickAccess,
+      savedCustomGuidedOptions,
+      savedPersonalVocabularyPreferences,
+      savedStudioWorkspacePreferences,
+    ] = await Promise.all([
       projectRepository.list(),
       libraryRepository.list(),
       templateRepository.list(),
       preferenceRepository.getLocale(),
       preferenceRepository.getStudioQuickAccessPreferences(),
+      preferenceRepository.getCustomGuidedOptions(),
+      preferenceRepository.getPersonalVocabularyPreferences(),
+      preferenceRepository.getStudioWorkspacePreferences(),
     ])
 
     projects.value = savedProjects
     libraryElements.value = savedLibrary
     templates.value = savedTemplates
+    customGuidedOptions.value = savedCustomGuidedOptions
     locale.value = savedLocale ?? 'en'
     const quickAccess = savedQuickAccess ?? defaultStudioQuickAccessPreferences()
+    const personalVocabularyPreferences =
+      savedPersonalVocabularyPreferences ?? defaultPersonalVocabularyPreferences()
+    const studioWorkspacePreferences =
+      savedStudioWorkspacePreferences ?? defaultStudioWorkspacePreferences()
     quickTemplateSearch.value = quickAccess.quickTemplateSearch
     quickTemplateFilter.value = quickAccess.quickTemplateFilter
     quickLibrarySearch.value = quickAccess.quickLibrarySearch
     quickLibraryFilter.value = quickAccess.quickLibraryFilter
+    historyFilter.value = studioWorkspacePreferences.historySearch
+    historyMediumFilter.value = studioWorkspacePreferences.historyMediumFilter
+    historySort.value = studioWorkspacePreferences.historySort
+    librarySearch.value = studioWorkspacePreferences.librarySearch
+    libraryFilter.value = studioWorkspacePreferences.libraryFilter
+    librarySort.value = studioWorkspacePreferences.librarySort
+    templateSearch.value = studioWorkspacePreferences.templateSearch
+    templateFilter.value = studioWorkspacePreferences.templateFilter
+    subjectLibrarySearch.value = studioWorkspacePreferences.subjectLibrarySearch
+    personalVocabularySearch.value = personalVocabularyPreferences.search
+    personalVocabularyGroupFilter.value = personalVocabularyPreferences.groupFilter
+    personalVocabularySort.value = personalVocabularyPreferences.sort
     selectedTemplateId.value = savedTemplates[0]?.id ?? null
     initialized.value = true
   }
@@ -579,12 +661,43 @@ const createStudioStore = () => {
       })
     },
   )
+  watch(
+    [historyFilter, historyMediumFilter, historySort, librarySearch, libraryFilter, librarySort, templateSearch, templateFilter, subjectLibrarySearch],
+    ([nextHistorySearch, nextHistoryMediumFilter, nextHistorySort, nextLibrarySearch, nextLibraryFilter, nextLibrarySort, nextTemplateSearch, nextTemplateFilter, nextSubjectLibrarySearch]) => {
+      if (!initialized.value) return
+
+      void preferenceRepository.setStudioWorkspacePreferences({
+        historySearch: nextHistorySearch,
+        historyMediumFilter: nextHistoryMediumFilter,
+        historySort: nextHistorySort,
+        librarySearch: nextLibrarySearch,
+        libraryFilter: nextLibraryFilter,
+        librarySort: nextLibrarySort,
+        templateSearch: nextTemplateSearch,
+        templateFilter: nextTemplateFilter,
+        subjectLibrarySearch: nextSubjectLibrarySearch,
+      })
+    },
+  )
+  watch(
+    [personalVocabularySearch, personalVocabularyGroupFilter, personalVocabularySort],
+    ([search, groupFilter, sort]) => {
+      if (!initialized.value) return
+
+      void preferenceRepository.setPersonalVocabularyPreferences({
+        search,
+        groupFilter,
+        sort,
+      })
+    },
+  )
 
   return {
     currentProject,
     projects,
     libraryElements,
     templates,
+    customGuidedOptions,
     historyFilter,
     historyMediumFilter,
     historySort,
@@ -601,6 +714,10 @@ const createStudioStore = () => {
     quickTemplateFilter,
     quickLibrarySearch,
     quickLibraryFilter,
+    subjectLibrarySearch,
+    personalVocabularySearch,
+    personalVocabularyGroupFilter,
+    personalVocabularySort,
     selectedTemplateId,
     pendingLibraryInsert,
     locale,
@@ -667,6 +784,118 @@ export const usePromptStudio = () => {
     store.locale.value = nextLocale
     i18nLocale.value = nextLocale
     await preferenceRepository.setLocale(nextLocale)
+  }
+
+  const addCustomGuidedOption = async ({
+    key,
+    label,
+    value,
+    locale,
+    medium,
+  }: AddCustomGuidedOptionInput) => {
+    const localizedLabel = label.trim()
+    const canonicalValue = value.trim()
+
+    if (!localizedLabel || !canonicalValue) {
+      return ''
+    }
+
+    const now = new Date().toISOString()
+    const scopedMediums = customGuidedOptionUsesMediumScope(key) && medium ? [medium] : undefined
+    const existing = store.customGuidedOptions.value.find(
+      (option) => option.key === key && option.value.trim().toLowerCase() === canonicalValue.toLowerCase(),
+    )
+
+    const nextOption: CustomGuidedOption = existing
+      ? {
+          ...existing,
+          labels: {
+            ...existing.labels,
+            [locale]: localizedLabel,
+            en: locale === 'en' ? localizedLabel : canonicalValue,
+          },
+          mediums:
+            existing.mediums || scopedMediums
+              ? [...new Set([...(existing.mediums ?? []), ...(scopedMediums ?? [])])]
+              : undefined,
+          updatedAt: now,
+        }
+      : {
+          id: createId(),
+          key,
+          value: canonicalValue,
+          labels: {
+            en: locale === 'en' ? localizedLabel : canonicalValue,
+            fr: locale === 'fr' ? localizedLabel : canonicalValue,
+          },
+          group: suggestCustomGuidedGroup(key, canonicalValue),
+          mediums: scopedMediums,
+          createdAt: now,
+          updatedAt: now,
+        }
+
+    const nextOptions = [
+      nextOption,
+      ...store.customGuidedOptions.value.filter((option) => option.id !== nextOption.id),
+    ]
+
+    store.customGuidedOptions.value = nextOptions
+    await preferenceRepository.setCustomGuidedOptions(nextOptions)
+    store.toast.value = t('builder.guided.savedToVocabulary')
+
+    return canonicalValue
+  }
+
+  const deleteCustomGuidedOption = async (id: string) => {
+    const nextOptions = store.customGuidedOptions.value.filter((option) => option.id !== id)
+    store.customGuidedOptions.value = nextOptions
+    await preferenceRepository.setCustomGuidedOptions(nextOptions)
+    store.toast.value = t('library.personalVocabulary.deleted')
+  }
+
+  const updateCustomGuidedOption = async ({
+    id,
+    label,
+    value,
+    locale,
+    group,
+  }: UpdateCustomGuidedOptionInput) => {
+    const localizedLabel = label.trim()
+    const canonicalValue = value.trim()
+
+    if (!localizedLabel || !canonicalValue) {
+      return ''
+    }
+
+    const existing = store.customGuidedOptions.value.find((option) => option.id === id)
+    if (!existing) {
+      return ''
+    }
+
+    const now = new Date().toISOString()
+    const shouldMirrorEnglishLabel = locale === 'en' || existing.labels.en === existing.value
+    const nextOption: CustomGuidedOption = {
+      ...existing,
+      value: canonicalValue,
+      group,
+      labels: {
+        ...existing.labels,
+        [locale]: localizedLabel,
+        en: shouldMirrorEnglishLabel ? (locale === 'en' ? localizedLabel : canonicalValue) : existing.labels.en,
+      },
+      updatedAt: now,
+    }
+
+    const nextOptions = [
+      nextOption,
+      ...store.customGuidedOptions.value.filter((option) => option.id !== id),
+    ]
+
+    store.customGuidedOptions.value = nextOptions
+    await preferenceRepository.setCustomGuidedOptions(nextOptions)
+    store.toast.value = t('library.personalVocabulary.updated')
+
+    return canonicalValue
   }
 
   const newProject = (medium = store.currentProject.value.medium) => {
@@ -849,7 +1078,7 @@ export const usePromptStudio = () => {
   }
 
   const applySuggestion = (id: string) => {
-    const suggestion = store.suggestions.find((entry) => entry.id === id)
+    const suggestion = store.suggestions.value.find((entry) => entry.id === id)
     if (!suggestion) return
     store.currentProject.value = suggestion.apply(store.currentProject.value)
     store.lastCreativeAction.value = t('preview.activitySuggestionApplied', {
@@ -1226,6 +1455,9 @@ export const usePromptStudio = () => {
     exportText,
     exportJson,
     copyPrompt,
+    addCustomGuidedOption,
+    deleteCustomGuidedOption,
+    updateCustomGuidedOption,
   }
 }
 

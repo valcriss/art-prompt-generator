@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import BasePanel from '../../../components/ui/BasePanel.vue'
 import ChipTag from '../../../components/ui/ChipTag.vue'
 import StudioSelect from '../../../components/ui/StudioSelect.vue'
@@ -9,12 +10,18 @@ import { formatDate } from '../../../utils/format'
 
 const studio = reactive(usePromptStudio())
 const { t } = useI18n()
+const router = useRouter()
 const historyFilterKeys = ['all', 'image', 'video'] as const
 const historySortOptions = computed(() => [
   { value: 'recent', label: t('history.sortRecent') },
   { value: 'title', label: t('history.sortTitle') },
   { value: 'medium', label: t('history.sortMedium') },
 ])
+
+const openProject = async (project: Parameters<typeof studio.loadProject>[0]) => {
+  studio.loadProject(project)
+  await router.push({ name: 'studio-builder' })
+}
 </script>
 
 <template>
@@ -60,7 +67,7 @@ const historySortOptions = computed(() => [
               <p class="text-xs text-slate-400">{{ t('history.updated') }} {{ formatDate(project.updatedAt, studio.locale) }}</p>
             </div>
             <div class="grid gap-2 sm:min-w-[168px]">
-              <button class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs transition hover:bg-white/10" @click="studio.loadProject(project)"><FontAwesomeIcon :icon="['fas', 'book-open']" class="mr-2" />{{ t('history.open') }}</button>
+              <button data-testid="history-open-project" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs transition hover:bg-white/10" @click="openProject(project)"><FontAwesomeIcon :icon="['fas', 'book-open']" class="mr-2" />{{ t('history.open') }}</button>
               <button class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs transition hover:bg-white/10" @click="studio.duplicateProject(project)"><FontAwesomeIcon :icon="['fas', 'clock-rotate-left']" class="mr-2" />{{ t('history.duplicate') }}</button>
               <button class="rounded-full border border-rose-300/20 bg-rose-300/5 px-3 py-2 text-xs text-rose-200 transition hover:bg-rose-300/10" @click="studio.deleteProject(project.id)">{{ t('history.delete') }}</button>
             </div>

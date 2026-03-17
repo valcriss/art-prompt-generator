@@ -1,4 +1,9 @@
-import type { AppLocale, PromptMedium, PromptProject } from '../types/models'
+import type {
+  AppLocale,
+  CustomGuidedOption,
+  PromptMedium,
+  PromptProject,
+} from '../types/models'
 import { getLocalizedGuidedOptions } from './guidedVocabulary'
 
 export interface TemplateFieldDefinition {
@@ -143,7 +148,11 @@ export const getLocalizedTemplateFieldOptions = (
   field: TemplateFieldDefinition,
   locale: AppLocale,
   medium: PromptMedium,
-) => (field.guidedKey ? getLocalizedGuidedOptions(field.guidedKey, locale, medium) : [])
+  customOptions: CustomGuidedOption[] = [],
+) =>
+  field.guidedKey
+    ? getLocalizedGuidedOptions(field.guidedKey, locale, medium, undefined, customOptions)
+    : []
 
 export const deriveTemplateProfileFromProject = (
   project: PromptProject,

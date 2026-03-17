@@ -1,7 +1,5 @@
 import type { PromptProject } from '../types/models'
-import { rankGuidedOptionsForProject } from './guidedRecommendations'
-import type { GuidedOption } from './guidedVocabulary'
-import { guidedVocabulary } from './guidedVocabulary'
+import { getPrioritizedGuidedOptions, guidedVocabulary, inferGuidedTone } from './guidedVocabulary'
 
 export type ContextualBundleField =
   | 'environment.weather'
@@ -52,15 +50,7 @@ const takeTopValue = (
   key: keyof typeof guidedVocabulary,
   project: PromptProject,
 ) =>
-  rankGuidedOptionsForProject(
-    guidedVocabulary[key].filter(
-      (option: GuidedOption) =>
-        !('mediums' in option) ||
-        !option.mediums ||
-        option.mediums.includes(project.medium),
-    ),
-    project,
-  )[0]?.value
+  getPrioritizedGuidedOptions(key, project, project.medium)[0]?.value
 
 const compactItems = (items: Array<ContextualBundleItem | null>) =>
   items.filter((item): item is ContextualBundleItem => Boolean(item))
@@ -69,6 +59,24 @@ const item = (
   field: ContextualBundleField,
   value: string | undefined,
 ): ContextualBundleItem | null => (value ? { field, value } : null)
+
+const bundleToneScore = (
+  bundleTone: ContextualBundle['tone'],
+  project: PromptProject,
+) => {
+  const guidedTone = inferGuidedTone(project, project.medium)
+
+  switch (guidedTone) {
+    case 'cinematic':
+      return bundleTone === 'peach' ? 8 : bundleTone === 'glow' ? 4 : 0
+    case 'illustration':
+      return bundleTone === 'glow' ? 8 : bundleTone === 'mist' ? 4 : 0
+    case 'photography':
+      return bundleTone === 'mist' ? 8 : bundleTone === 'glow' ? 3 : 0
+    case 'video':
+      return bundleTone === 'peach' ? 8 : bundleTone === 'glow' ? 5 : 0
+  }
+}
 
 const bundleBlueprints: BundleBlueprint[] = [
   {
@@ -170,6 +178,75 @@ const bundleBlueprints: BundleBlueprint[] = [
     ],
   },
   {
+    id: 'cyberpunk-rain',
+    titleKey: 'builder.guided.bundles.cyberpunk.title',
+    subtitleKey: 'builder.guided.bundles.cyberpunk.subtitle',
+    reasonKey: 'builder.guided.reasons.universeCue',
+    icon: 'sliders',
+    tone: 'peach',
+    when: (project) =>
+      includesValue(project.environment.era, ['near future', 'retro-futuristic']) ||
+      includesValue(project.style, ['cyberpunk']) ||
+      (includesValue(project.environment.weather, ['rain', 'storm']) &&
+        includesValue(project.environment.timeOfDay, ['night', 'blue hour', 'midnight'])),
+    build: () => [
+      item('style', 'cyberpunk noir illustration'),
+      item('lighting', 'neon reflections'),
+      item('environment.timeOfDay', 'sleepless city night'),
+    ],
+  },
+  {
+    id: 'sacred-sanctuary',
+    titleKey: 'builder.guided.bundles.sanctuary.title',
+    subtitleKey: 'builder.guided.bundles.sanctuary.subtitle',
+    reasonKey: 'builder.guided.reasons.universeCue',
+    icon: 'wand-magic-sparkles',
+    tone: 'glow',
+    when: (project) =>
+      includesValue(project.mood, ['sacred']) ||
+      includesValue(project.subject.type, ['monk', 'oracle', 'priestess']) ||
+      includesValue(project.environment.era, ['ancient', 'medieval']),
+    build: () => [
+      item('style', 'sacred icon painting'),
+      item('lighting', 'stained glass light'),
+      item('composition', 'cathedral framing'),
+    ],
+  },
+  {
+    id: 'maritime-mist',
+    titleKey: 'builder.guided.bundles.maritime.title',
+    subtitleKey: 'builder.guided.bundles.maritime.subtitle',
+    reasonKey: 'builder.guided.reasons.universeCue',
+    icon: 'wand-magic-sparkles',
+    tone: 'mist',
+    when: (project) =>
+      includesValue(project.subject.type, ['sailor']) ||
+      includesValue(project.environment.weather, ['sea mist']) ||
+      includesValue(project.description, ['harbor', 'port', 'shore', 'coast']),
+    build: () => [
+      item('style', 'maritime cinematic realism'),
+      item('lighting', 'reflected water light'),
+      item('composition', 'horizon-heavy seascape'),
+    ],
+  },
+  {
+    id: 'desert-mythic',
+    titleKey: 'builder.guided.bundles.desert.title',
+    subtitleKey: 'builder.guided.bundles.desert.subtitle',
+    reasonKey: 'builder.guided.reasons.universeCue',
+    icon: 'sliders',
+    tone: 'glow',
+    when: (project) =>
+      includesValue(project.environment.weather, ['dust storm', 'heat shimmer']) ||
+      includesValue(project.environment.era, ['ancient', 'mythic']) ||
+      includesValue(project.description, ['desert', 'dune', 'sand']),
+    build: () => [
+      item('style', 'desert mythic matte painting'),
+      item('lighting', 'dusty sun rays'),
+      item('composition', 'heat-haze distance'),
+    ],
+  },
+  {
     id: 'camera-observer',
     titleKey: 'builder.guided.bundles.observer.title',
     subtitleKey: 'builder.guided.bundles.observer.subtitle',
@@ -264,7 +341,7 @@ const createFallbackBundles = (project: PromptProject): ContextualBundle[] => {
     }
   }
 
-  return bundles
+  return bundles.sort((left, right) => bundleToneScore(right.tone, project) - bundleToneScore(left.tone, project))
 }
 
 export const createContextualBundles = (
@@ -282,6 +359,7 @@ export const createContextualBundles = (
       items: compactItems(bundle.build(project)),
     }))
     .filter((bundle) => bundle.items.length)
+    .sort((left, right) => bundleToneScore(right.tone, project) - bundleToneScore(left.tone, project))
 
   if (curatedBundles.length) {
     return curatedBundles.slice(0, project.medium === 'video' ? 3 : 3)

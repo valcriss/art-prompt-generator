@@ -23,6 +23,45 @@ export const messages = {
       noMatches: 'No projects match your filter.',
       clearSelection: 'Clear selection',
     },
+    seo: {
+      keywords:
+        'art prompt generator, AI art prompt builder, image prompt builder, video prompt builder, ComfyUI prompt generator, creative prompt studio',
+      twitterImageAlt: 'Preview card for Art Prompt Generator',
+      routes: {
+        landing: {
+          title: 'Create richer prompts for image and video',
+          description:
+            'Build richer image and video prompts with guided scene composition, reusable creative libraries and live prompt previews.',
+        },
+        builder: {
+          title: 'Prompt builder studio',
+          description:
+            'Shape subject, atmosphere, lighting, camera language and story detail for richer image and video prompts.',
+        },
+        library: {
+          title: 'Creative library',
+          description:
+            'Reuse characters, places, atmospheres and details to build consistent visual worlds faster.',
+        },
+        templates: {
+          title: 'Prompt templates',
+          description:
+            'Start from curated templates for cinematic scenes, portraits, environments and visual moods.',
+        },
+        history: {
+          title: 'Saved prompt projects',
+          description:
+            'Reopen, duplicate and refine your local prompt projects for image and video creation.',
+        },
+      },
+      structuredData: {
+        features: {
+          builder: 'Guided prompt builder for image and video',
+          library: 'Reusable creative library for scenes and atmosphere',
+          preview: 'Live prompt preview with export',
+        },
+      },
+    },
     studio: {
       title: 'Studio workspace',
       metrics: {
@@ -192,6 +231,101 @@ export const messages = {
       previewBadge: 'Soulful prompt',
       samplePrompt:
         'old wounded samurai crossing a rainy neon alley at blue hour, drifting steam, reflective asphalt, melancholic silence, cinematic rim light, subtle fabric motion, slow push-in camera, storytelling details that imply a larger unseen city',
+      benefits: {
+        kicker: 'Why it is useful',
+        title: 'A prompt builder for artists who need more than a text box',
+        intro:
+          'Art Prompt Generator helps turn vague ideas into structured prompts for AI image and video tools by making subject, environment, lighting, composition and storytelling easier to articulate.',
+        items: {
+          guidance: {
+            title: 'Guide the scene step by step',
+            text:
+              'Move from subject to world detail, mood, lighting and camera language without losing coherence or starting from a blank page.',
+          },
+          consistency: {
+            title: 'Build a reusable visual language',
+            text:
+              'Save characters, locations, atmospheres and templates so recurring worlds and styles stay consistent across projects.',
+          },
+          video: {
+            title: 'Handle image and video prompting',
+            text:
+              'Shape still-image prompts and single-shot video prompts with motion, lens feel and camera movement in the same creative workspace.',
+          },
+        },
+      },
+      useCases: {
+        kicker: 'Use cases',
+        title: 'Common ways creators can use the studio',
+        intro:
+          'The landing now explains concrete scenarios so both users and search engines can understand the product intent more clearly.',
+        items: {
+          conceptArt: {
+            title: 'Concept art and scene ideation',
+            text:
+              'Expand a rough visual idea into a richer prompt with atmosphere, narrative clues and stronger world-building details.',
+          },
+          characterDesign: {
+            title: 'Character design and portrait prompting',
+            text:
+              'Define appearance, action, emotion, framing and lighting to produce more directed portrait and character prompts.',
+          },
+          storyboards: {
+            title: 'Single-shot video prompt drafting',
+            text:
+              'Prepare cinematic video prompts with subject motion, environment motion, shot type and camera movement that remain readable.',
+          },
+          lookdev: {
+            title: 'Look development for AI art workflows',
+            text:
+              'Use templates, reusable library blocks and prompt history to iterate on art direction faster inside local creative projects.',
+          },
+        },
+      },
+      keywordTopics: {
+        kicker: 'Creative topics covered',
+        title: 'The studio speaks the language of prompt building',
+        intro:
+          'These themes reflect the kinds of queries, creative needs and prompt-building tasks the product is meant to serve.',
+        items: {
+          imagePrompts: 'AI image prompt builder',
+          videoPrompts: 'AI video prompt builder',
+          comfyui: 'ComfyUI prompt workflow preparation',
+          sceneBuilding: 'scene composition and atmosphere design',
+          promptLibrary: 'reusable prompt library and templates',
+          creativeWorkflow: 'creative workflow for artists and illustrators',
+        },
+        outro:
+          'The goal is not keyword stuffing. It is to make the landing explicit about who the product serves, what it helps create and how it supports richer prompt authoring.',
+      },
+      faq: {
+        kicker: 'FAQ',
+        title: 'Questions people ask before trying the studio',
+        intro:
+          'This section clarifies the product for both visitors and search engines with direct answers about prompting, ComfyUI-oriented workflows and local project storage.',
+        items: {
+          what: {
+            question: 'What is Art Prompt Generator?',
+            answer:
+              'Art Prompt Generator is a creative prompt builder for AI image and video workflows. It helps you structure subject, environment, mood, lighting, composition, storytelling detail and camera language into a richer final prompt.',
+          },
+          comfyui: {
+            question: 'Can I use it for ComfyUI and other AI image tools?',
+            answer:
+              'Yes. The product is built to help you prepare clearer prompts for ComfyUI and other image-generation tools by turning rough ideas into more directed and expressive prompt text.',
+          },
+          video: {
+            question: 'Does it support video prompt building too?',
+            answer:
+              'Yes. The studio supports single-shot video prompting with motion, camera movement, lens feel and temporal clarity, in addition to standard still-image prompt building.',
+          },
+          save: {
+            question: 'Can I save and reuse my prompt projects?',
+            answer:
+              'Yes. You can save projects locally in the browser, reopen them later, duplicate them, export them and reuse templates or creative library elements to keep your visual direction consistent.',
+          },
+        },
+      },
       features: {
         guidedTitle: 'Guided creative blocks',
         guidedText: 'Move through subject, environment, atmosphere, storytelling and camera choices without facing a blank page.',
@@ -300,25 +434,62 @@ export const messages = {
         additionalCount: 'additional characters',
       },
       suggestions: {
-        label: 'Quick enrichments',
-        atmosphere: 'Add atmosphere',
-        cinematic: 'Make it cinematic',
-        story: 'Add storytelling detail',
-        world: 'Reveal world detail',
-        emotion: 'Increase emotional depth',
+        title: 'Targeted enrichments',
+        subtitle: 'Small creative pushes that deepen the scene without redirecting it completely.',
+        fineTitle: 'Fine pushes',
+        fineSubtitle: 'Use these when the scene is close, but still missing one memorable touch.',
+        note: 'These moves are for nuance: a trace of story, a stronger feeling, a clearer frame, a more breathable world.',
+        emptyTitle: 'No finer push needed yet',
+        emptyText: 'The scene already has enough structure that broader direction changes matter more than small nudges.',
+        apply: 'Apply touch',
+        reasonLabel: 'Why this is useful now',
+        atmosphere: 'Lay in atmosphere',
+        atmosphereDescription: 'Give the scene a clearer air, hour and emotional weather so it stops feeling generic.',
+        atmosphereReason: 'Useful when the subject exists but the world around it still has no real climate.',
+        framing: 'Refine the image language',
+        framingDescription: 'Tighten light, composition and capture feel so the scene reads with more intent.',
+        framingReason: 'Useful when the project has ingredients already, but not yet a visual signature.',
+        story: 'Plant a story trace',
+        storyDescription: 'Slip in one quiet clue that suggests something just happened, or is about to.',
+        storyReason: 'Best when the frame needs one detail that lingers in memory after the first read.',
+        world: 'Open the world outward',
+        worldDescription: 'Add a secondary environmental cue that makes the scene feel part of something larger.',
+        worldReason: 'Useful when the location feels defined, but still too sealed off from a wider world.',
+        emotion: 'Deepen the inner charge',
+        emotionDescription: 'Push the scene beyond description by giving it more emotional subtext and tension.',
+        emotionReason: 'Useful when the scene says what is visible, but not yet what it should stir inside the viewer.',
+        motion: 'Shape the movement',
+        motionDescription: 'Give a video scene a readable motion path and camera pulse without making it noisy.',
+        motionReason: 'Useful when the shot has a mood and a place, but still no real flow through time.',
       },
       guided: {
         suggested: 'Suggested values',
         custom: 'Custom',
         canonical: 'Prompt token',
         noResults: 'No preset value matches. Press Enter to keep your own wording.',
+        addAction: 'Save to my vocabulary',
+        promptLabel: 'English prompt token',
+        promptPlaceholder: 'storm-lit alley, sacred hush, acid rain...',
+        addHelper: 'Save this wording to your personal vocabulary so it reappears in future projects.',
+        addHelperWithPrompt: 'Save this wording to your personal vocabulary and define the English token used inside the prompt.',
+        savedToVocabulary: 'Saved to personal vocabulary',
+        personalOption: 'Personal',
+        defaultOption: 'Default',
+        allOptions: 'All',
+        personalOnly: 'Personal only',
+        suggestedGroup: 'Suggested group',
+        targetField: 'Target field',
         freeHint: 'Pick a creative base or type your own wording.',
         subjectHint: 'Start from a familiar archetype, then refine it freely.',
         environmentHint: 'Use the suggestions as scene anchors, not as limits.',
         atmosphereHint: 'Choose a tone, then push it toward your own visual voice.',
         motionHint: 'For video, keep movement readable and cinematic.',
-        smartTitle: 'Smart cues',
-        smartSubtitle: 'Ready-made combinations that fit the current scene direction.',
+        panelTitle: 'Suggestions',
+        panelSubtitle: 'Creative direction appears here in two scales: broader scene moves first, then smaller refinements.',
+        smartTitle: 'Direction sets',
+        smartSubtitle: 'These are broader creative moves that can shift the gravity of the whole scene at once.',
+        majorTitle: 'Major shifts',
+        majorSubtitle: 'Use these when the scene needs a stronger overall direction, not just a small correction.',
         smartEmptyTitle: 'Unlock contextual directions',
         smartEmptyText: 'Add a subject, a mood, a weather cue or a time of day to reveal curated creative paths.',
         applyBundle: 'Apply combo',
@@ -355,6 +526,22 @@ export const messages = {
             title: 'Anime clarity',
             subtitle: 'Cleaner framing and stylized readability for key visual scenes.',
           },
+          cyberpunk: {
+            title: 'Neon rainline',
+            subtitle: 'A cyberpunk night package of wet light, city pressure and electric afterglow.',
+          },
+          sanctuary: {
+            title: 'Sanctuary hush',
+            subtitle: 'Sacred light, icon-like stylization and architectural framing for reverent scenes.',
+          },
+          maritime: {
+            title: 'Maritime veil',
+            subtitle: 'Salt air, water reflections and a broad horizon for coastal or harbor scenes.',
+          },
+          desert: {
+            title: 'Desert mirage',
+            subtitle: 'Dust-lit distance and mythic heat for arid, ancient or dune-borne scenes.',
+          },
           observer: {
             title: 'Observing camera',
             subtitle: 'A restrained lens and push-in language for quiet single-shot scenes.',
@@ -371,6 +558,7 @@ export const messages = {
           subjectFocus: 'Suggested because the subject reads like a portrait or close character study.',
           worldScale: 'Suggested because the worldbuilding hints at fantasy scale or a heroic subject.',
           styleClarity: 'Suggested to sharpen a stylized image direction without adding noise.',
+          universeCue: 'Suggested because several signals in the project point toward the same visual universe.',
           videoMotion: 'Suggested because the current video scene calls for subtle, readable motion.',
           videoEnergy: 'Suggested because the current setup wants stronger camera energy.',
           generalScene: 'Based on the strongest environmental signals already present in the scene.',
@@ -541,6 +729,30 @@ export const messages = {
         characters: 'Characters',
         compositions: 'Compositions',
       },
+      personalVocabulary: {
+        title: 'Personal vocabulary',
+        subtitle: 'Review the guided values you added yourself and remove the ones you no longer want to surface in comboboxes.',
+        search: 'Search personal vocabulary',
+        sort: 'Sort personal vocabulary',
+        filterGroup: 'Filter by creative group',
+        filterAllGroups: 'All groups',
+        sortSmart: 'Smart order',
+        sortRecent: 'Most recent',
+        sortField: 'By field',
+        sortGroup: 'By group',
+        sortName: 'By name',
+        localLabel: 'Visible label',
+        promptValue: 'Prompt token',
+        group: 'Creative group',
+        edit: 'Edit',
+        save: 'Save changes',
+        delete: 'Delete',
+        updated: 'Personal vocabulary entry updated',
+        deleted: 'Personal vocabulary entry deleted',
+        emptyTitle: 'No personal vocabulary yet',
+        empty: 'Save a value from any guided combobox to make it reappear across the studio.',
+        noResults: 'No personal vocabulary entry matches the current search or filters.',
+      },
       structured: {
         helper: 'Use guided values when useful, or type your own wording.',
         preview: 'Structured profile',
@@ -610,6 +822,45 @@ export const messages = {
       noProjects: 'Aucun projet sauvegarde pour le moment.',
       noMatches: 'Aucun projet ne correspond au filtre.',
       clearSelection: 'Effacer la selection',
+    },
+    seo: {
+      keywords:
+        'generateur de prompts artistiques, prompt IA image, prompt IA video, prompt builder ComfyUI, studio creatif de prompts, generateur prompt art',
+      twitterImageAlt: 'Carte d apercu de Art Prompt Generator',
+      routes: {
+        landing: {
+          title: 'Créez des prompts image et vidéo plus riches',
+          description:
+            'Construisez des prompts image et video plus riches avec une composition guidee, une bibliotheque creative reutilisable et un apercu en direct.',
+        },
+        builder: {
+          title: 'Studio de creation de prompts',
+          description:
+            'Modelez le sujet, l atmosphere, la lumiere, le langage camera et les details narratifs pour des prompts image et video plus expressifs.',
+        },
+        library: {
+          title: 'Bibliotheque creative',
+          description:
+            'Reutilisez personnages, lieux, atmospheres et details pour construire plus vite des univers visuels coherents.',
+        },
+        templates: {
+          title: 'Templates de prompts',
+          description:
+            'Partez de templates soignes pour scenes cinematographiques, portraits, environnements et ambiances visuelles.',
+        },
+        history: {
+          title: 'Projets de prompts sauvegardes',
+          description:
+            'Rouvrez, dupliquez et affinez vos projets locaux de prompts image et video.',
+        },
+      },
+      structuredData: {
+        features: {
+          builder: 'Builder guide pour prompts image et video',
+          library: 'Bibliotheque creative reutilisable pour scenes et atmospheres',
+          preview: 'Apercu du prompt en direct avec export',
+        },
+      },
     },
     studio: {
       title: 'Espace studio',
@@ -780,6 +1031,101 @@ export const messages = {
       previewBadge: 'Prompt expressif',
       samplePrompt:
         'vieux samourai blesse traversant une ruelle neon sous la pluie a l heure bleue, vapeur diffuse, asphalte reflechi, silence melancolique, contre-jour cinematographique, tissu en leger mouvement, lent travelling avant, details narratifs qui suggerent une ville plus vaste hors champ',
+      benefits: {
+        kicker: 'Pourquoi c est utile',
+        title: 'Un builder de prompts pour les artistes qui ont besoin de plus qu une zone de texte',
+        intro:
+          'Art Prompt Generator aide a transformer une idee vague en prompt structure pour les outils IA image et video en rendant plus clairs le sujet, l environnement, la lumiere, la composition et la narration.',
+        items: {
+          guidance: {
+            title: 'Guider la scene etape par etape',
+            text:
+              'Passez du sujet aux details du monde, a l ambiance, a la lumiere et au langage camera sans perdre la coherence ni repartir d une page blanche.',
+          },
+          consistency: {
+            title: 'Construire un langage visuel reutilisable',
+            text:
+              'Sauvegardez personnages, lieux, atmospheres et templates pour garder des univers et des styles coherents d un projet a l autre.',
+          },
+          video: {
+            title: 'Traiter les prompts image et video',
+            text:
+              'Modelez des prompts image fixe et des prompts video en plan unique avec mouvement, sensation d optique et deplacement camera dans le meme espace creatif.',
+          },
+        },
+      },
+      useCases: {
+        kicker: 'Cas d usage',
+        title: 'Des usages concrets pour les createurs visuels',
+        intro:
+          'La landing explicite maintenant des scenarios concrets pour que les utilisateurs comme les moteurs comprennent plus clairement l intention du produit.',
+        items: {
+          conceptArt: {
+            title: 'Concept art et ideation de scene',
+            text:
+              'Faites evoluer une idee visuelle brute vers un prompt plus riche avec atmosphere, indices narratifs et details de world-building plus affirmes.',
+          },
+          characterDesign: {
+            title: 'Character design et prompts de portrait',
+            text:
+              'Definissez apparence, action, emotion, cadrage et lumiere pour obtenir des prompts de portrait et de personnage mieux diriges.',
+          },
+          storyboards: {
+            title: 'Preparation de prompts video en plan unique',
+            text:
+              'Preparez des prompts video cinematographiques avec mouvement du sujet, mouvement d environnement, type de plan et deplacement camera tout en restant lisible.',
+          },
+          lookdev: {
+            title: 'Look development pour workflows d art IA',
+            text:
+              'Utilisez templates, blocs reutilisables et historique de prompts pour iterer plus vite sur la direction artistique dans des projets locaux.',
+          },
+        },
+      },
+      keywordTopics: {
+        kicker: 'Sujets couverts',
+        title: 'Le studio parle le langage de la creation de prompts',
+        intro:
+          'Ces themes refletent les requetes, les besoins creatifs et les taches de prompt building auxquelles le produit veut repondre.',
+        items: {
+          imagePrompts: 'builder de prompts IA image',
+          videoPrompts: 'builder de prompts IA video',
+          comfyui: 'preparation de prompts pour workflows ComfyUI',
+          sceneBuilding: 'composition de scene et design d atmosphere',
+          promptLibrary: 'bibliotheque reutilisable de prompts et templates',
+          creativeWorkflow: 'workflow creatif pour artistes et illustrateurs',
+        },
+        outro:
+          'Le but n est pas de surcharger la page en mots-cles, mais de rendre explicites les usages, les beneficiaires et la nature du produit pour des prompts plus riches.',
+      },
+      faq: {
+        kicker: 'FAQ',
+        title: 'Les questions que l on se pose avant d essayer le studio',
+        intro:
+          'Cette section clarifie le produit pour les visiteurs comme pour les moteurs avec des reponses directes sur le prompting, les workflows proches de ComfyUI et la sauvegarde locale des projets.',
+        items: {
+          what: {
+            question: 'Qu est-ce que Art Prompt Generator ?',
+            answer:
+              'Art Prompt Generator est un builder creatif de prompts pour les workflows IA image et video. Il vous aide a structurer le sujet, l environnement, l ambiance, la lumiere, la composition, les details narratifs et le langage camera dans un prompt final plus riche.',
+          },
+          comfyui: {
+            question: 'Peut-on l utiliser pour ComfyUI et d autres outils IA image ?',
+            answer:
+              'Oui. Le produit est pense pour aider a preparer des prompts plus clairs pour ComfyUI et d autres generateurs d images, en transformant une idee brute en texte plus dirige et plus expressif.',
+          },
+          video: {
+            question: 'Le studio gere-t-il aussi les prompts video ?',
+            answer:
+              'Oui. Le studio prend en charge les prompts video en plan unique avec mouvement, deplacement camera, sensation d optique et progression temporelle, en plus des prompts d image fixe.',
+          },
+          save: {
+            question: 'Peut-on sauvegarder et reutiliser ses projets de prompts ?',
+            answer:
+              'Oui. Vous pouvez sauvegarder les projets localement dans le navigateur, les rouvrir plus tard, les dupliquer, les exporter et reutiliser templates ou elements de bibliotheque pour garder une direction visuelle coherente.',
+          },
+        },
+      },
       features: {
         guidedTitle: 'Blocs creatifs guides',
         guidedText: 'Avancez entre sujet, environnement, atmosphere, narration et camera sans affronter la page blanche.',
@@ -888,25 +1234,62 @@ export const messages = {
         additionalCount: 'autres personnages',
       },
       suggestions: {
-        label: 'Enrichissements rapides',
-        atmosphere: 'Ajouter de l atmosphere',
-        cinematic: 'Rendre la scene cinematographique',
-        story: 'Ajouter un detail narratif',
-        world: 'Ajouter du contexte visuel',
-        emotion: 'Augmenter la profondeur emotionnelle',
+        title: 'Enrichissements cibles',
+        subtitle: 'De petites impulsions creatives qui approfondissent la scene sans en detourner toute la direction.',
+        fineTitle: 'Retouches fines',
+        fineSubtitle: 'A utiliser quand la scene est presque la, mais qu il lui manque encore une trace memorisable.',
+        note: 'Ces gestes servent la nuance: une trace d histoire, une sensation plus nette, un cadre plus affirme, un monde plus respirant.',
+        emptyTitle: 'Aucune retouche fine necessaire pour l instant',
+        emptyText: 'La scene a deja assez de structure pour que les changements de direction generale comptent davantage que les petits gestes.',
+        apply: 'Appliquer',
+        reasonLabel: 'Pourquoi c est utile maintenant',
+        atmosphere: 'Poser une atmosphere',
+        atmosphereDescription: 'Donnez a la scene un air, une heure et une meteo emotionnelle plus nettes pour qu elle cesse d etre generique.',
+        atmosphereReason: 'Utile quand le sujet existe deja mais que le monde autour de lui n a pas encore de vrai climat.',
+        framing: 'Affiner le langage visuel',
+        framingDescription: 'Resserrez lumiere, composition et sensation de capture pour que la scene lise avec plus d intention.',
+        framingReason: 'Utile quand le projet a deja ses ingredients, mais pas encore sa signature visuelle.',
+        story: 'Deposer une trace narrative',
+        storyDescription: 'Glissez un indice discret qui suggere qu il vient de se passer quelque chose, ou que quelque chose approche.',
+        storyReason: 'Ideal quand l image a besoin d un detail qui reste en memoire apres la premiere lecture.',
+        world: 'Ouvrir le monde au-dela du cadre',
+        worldDescription: 'Ajoutez un signe secondaire d environnement qui relie la scene a quelque chose de plus vaste.',
+        worldReason: 'Utile quand le lieu est defini, mais semble encore trop ferme sur lui-meme.',
+        emotion: 'Approfondir la charge interieure',
+        emotionDescription: 'Poussez la scene au-dela de la simple description en lui donnant plus de sous-texte et de tension sensible.',
+        emotionReason: 'Utile quand la scene dit ce qui est visible, mais pas encore ce qu elle doit faire naitre chez le spectateur.',
+        motion: 'Sculpter le mouvement',
+        motionDescription: 'Donnez a la scene video une trajectoire lisible et une pulsation camera sans la rendre bruyante.',
+        motionReason: 'Utile quand le plan a deja une ambiance et un lieu, mais pas encore de vrai trajet dans le temps.',
       },
       guided: {
         suggested: 'Valeurs suggerees',
         custom: 'Libre',
         canonical: 'Terme du prompt',
         noResults: 'Aucune valeur guidee ne correspond. Appuyez sur Entree pour conserver votre formulation.',
+        addAction: 'Sauvegarder dans mon vocabulaire',
+        promptLabel: 'Terme anglais du prompt',
+        promptPlaceholder: 'storm-lit alley, sacred hush, acid rain...',
+        addHelper: 'Sauvegardez cette formulation dans votre vocabulaire personnel pour la retrouver dans les prochains projets.',
+        addHelperWithPrompt: 'Sauvegardez cette formulation dans votre vocabulaire personnel et renseignez le terme anglais utilise dans le prompt.',
+        savedToVocabulary: 'Ajoute au vocabulaire personnel',
+        personalOption: 'Perso',
+        defaultOption: 'Defaut',
+        allOptions: 'Toutes',
+        personalOnly: 'Perso uniquement',
+        suggestedGroup: 'Groupe suggere',
+        targetField: 'Champ cible',
         freeHint: 'Choisissez une base creative ou saisissez votre propre nuance.',
         subjectHint: 'Partez d un archetype familier puis affinez-le librement.',
         environmentHint: 'Utilisez les suggestions comme ancrages de scene, pas comme une limite.',
         atmosphereHint: 'Choisissez une tonalite puis poussez-la vers votre propre direction visuelle.',
         motionHint: 'En video, gardez un mouvement lisible et cinematographique.',
-        smartTitle: 'Pistes contextuelles',
-        smartSubtitle: 'Combinaisons pretes a l emploi qui collent a la direction actuelle de la scene.',
+        panelTitle: 'Suggestions',
+        panelSubtitle: 'La direction creative apparait ici sur deux echelles: d abord les gestes larges de scene, puis les retouches plus fines.',
+        smartTitle: 'Directions de scene',
+        smartSubtitle: 'Ce sont des gestes plus larges capables de deplacer la gravite de toute la scene en une fois.',
+        majorTitle: 'Grands mouvements',
+        majorSubtitle: 'A utiliser quand la scene demande une direction plus forte, pas seulement une correction locale.',
         smartEmptyTitle: 'Debloquez des directions contextuelles',
         smartEmptyText: 'Ajoutez un sujet, une humeur, une meteo ou un moment de la journee pour reveler des pistes creatives.',
         applyBundle: 'Appliquer',
@@ -943,6 +1326,22 @@ export const messages = {
             title: 'Clarte anime',
             subtitle: 'Un cadrage plus net et plus stylise pour les scenes type key visual.',
           },
+          cyberpunk: {
+            title: 'Pluie neon',
+            subtitle: 'Un ensemble nocturne cyberpunk de lumiere mouillee, pression urbaine et reverberation electrique.',
+          },
+          sanctuary: {
+            title: 'Silence du sanctuaire',
+            subtitle: 'Lumiere sacree, stylisation d icone et cadrage architectural pour les scenes de recueillement.',
+          },
+          maritime: {
+            title: 'Voile maritime',
+            subtitle: 'Air sale, reflets d eau et horizon ouvert pour les scenes cotieres ou portuaires.',
+          },
+          desert: {
+            title: 'Mirage du desert',
+            subtitle: 'Distance poussiereuse et chaleur mythique pour les scenes arides, antiques ou de dunes.',
+          },
           observer: {
             title: 'Camera observatrice',
             subtitle: 'Une optique calme et un leger travelling avant pour les plans-sequences contemplatifs.',
@@ -959,6 +1358,7 @@ export const messages = {
           subjectFocus: 'Suggeree car le sujet ressemble a un portrait ou a une etude de personnage.',
           worldScale: 'Suggeree car le worldbuilding evoque une echelle fantasy ou heroique.',
           styleClarity: 'Suggeree pour clarifier une direction stylisee sans ajouter de bruit.',
+          universeCue: 'Suggeree parce que plusieurs signaux du projet pointent vers le meme univers visuel.',
           videoMotion: 'Suggeree car la scene video appelle un mouvement subtil et lisible.',
           videoEnergy: 'Suggeree car la configuration actuelle appelle plus d energie camera.',
           generalScene: 'Basee sur les signaux d environnement les plus presents dans la scene.',
@@ -1128,6 +1528,30 @@ export const messages = {
         total: 'Tous les elements',
         characters: 'Personnages',
         compositions: 'Compositions',
+      },
+      personalVocabulary: {
+        title: 'Vocabulaire personnel',
+        subtitle: 'Retrouvez les valeurs guidees que vous avez ajoutees vous-meme et supprimez celles que vous ne voulez plus voir remonter dans les combobox.',
+        search: 'Rechercher dans le vocabulaire personnel',
+        sort: 'Trier le vocabulaire personnel',
+        filterGroup: 'Filtrer par groupe creatif',
+        filterAllGroups: 'Tous les groupes',
+        sortSmart: 'Ordre intelligent',
+        sortRecent: 'Plus recent',
+        sortField: 'Par champ',
+        sortGroup: 'Par groupe',
+        sortName: 'Par nom',
+        localLabel: 'Libelle visible',
+        promptValue: 'Terme du prompt',
+        group: 'Groupe creatif',
+        edit: 'Modifier',
+        save: 'Enregistrer les changements',
+        delete: 'Supprimer',
+        updated: 'Entree du vocabulaire personnel mise a jour',
+        deleted: 'Entree du vocabulaire personnel supprimee',
+        emptyTitle: 'Aucun vocabulaire personnel pour le moment',
+        empty: 'Sauvegardez une valeur depuis n importe quelle combobox guidee pour la retrouver partout dans le studio.',
+        noResults: 'Aucune entree du vocabulaire personnel ne correspond a la recherche ou aux filtres actuels.',
       },
       structured: {
         helper: 'Utilisez des valeurs guidees quand c est utile, ou saisissez votre propre formulation.',

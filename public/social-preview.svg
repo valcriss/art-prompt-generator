@@ -1,0 +1,57 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" rx="36" fill="#07101D"/>
+  <rect x="24" y="24" width="1152" height="582" rx="28" fill="url(#bg)" stroke="rgba(198,211,230,0.12)"/>
+  <circle cx="226" cy="134" r="148" fill="#8BD3FF" fill-opacity="0.14"/>
+  <circle cx="1018" cy="510" r="174" fill="#F7A072" fill-opacity="0.14"/>
+  <g opacity="0.95">
+    <rect x="80" y="94" width="312" height="442" rx="26" fill="#0D1728" stroke="#243248"/>
+    <text x="112" y="146" fill="#8BD3FF" font-family="Space Grotesk, Arial, sans-serif" font-size="22" letter-spacing="5.5">CREATIVE PROMPT STUDIO</text>
+    <text x="112" y="214" fill="#F4F8FF" font-family="Fraunces, Georgia, serif" font-size="54" font-weight="700">Art Prompt</text>
+    <text x="112" y="272" fill="#F4F8FF" font-family="Fraunces, Georgia, serif" font-size="54" font-weight="700">Generator</text>
+    <text x="112" y="332" fill="#B5C2D8" font-family="Space Grotesk, Arial, sans-serif" font-size="25">Guide subject, atmosphere, lighting,</text>
+    <text x="112" y="368" fill="#B5C2D8" font-family="Space Grotesk, Arial, sans-serif" font-size="25">camera language and scene detail</text>
+    <text x="112" y="404" fill="#B5C2D8" font-family="Space Grotesk, Arial, sans-serif" font-size="25">for richer image and video prompts.</text>
+    <rect x="112" y="454" width="164" height="44" rx="22" fill="#F4F8FF"/>
+    <text x="145" y="482" fill="#08101D" font-family="Space Grotesk, Arial, sans-serif" font-size="20" font-weight="700">Start building</text>
+  </g>
+  <g>
+    <rect x="462" y="100" width="650" height="176" rx="28" fill="#0A1424" stroke="#223148"/>
+    <text x="500" y="148" fill="#8BD3FF" font-family="Space Grotesk, Arial, sans-serif" font-size="18" letter-spacing="4.5">LIVE PROMPT PREVIEW</text>
+    <text x="500" y="204" fill="#F4F8FF" font-family="Space Grotesk, Arial, sans-serif" font-size="28">old wounded samurai crossing a neon alley at blue hour,</text>
+    <text x="500" y="244" fill="#F4F8FF" font-family="Space Grotesk, Arial, sans-serif" font-size="28">rain haze, reflective asphalt, melancholic silence,</text>
+    <text x="500" y="284" fill="#F4F8FF" font-family="Space Grotesk, Arial, sans-serif" font-size="28">cinematic backlight, subtle fabric motion, slow push-in</text>
+  </g>
+  <g>
+    <rect x="462" y="304" width="202" height="172" rx="24" fill="#0C1728" stroke="#223148"/>
+    <text x="492" y="348" fill="#8BD3FF" font-family="Space Grotesk, Arial, sans-serif" font-size="16" letter-spacing="3.5">SUBJECT</text>
+    <text x="492" y="394" fill="#F4F8FF" font-family="Fraunces, Georgia, serif" font-size="28">Scene-led</text>
+    <text x="492" y="430" fill="#B5C2D8" font-family="Space Grotesk, Arial, sans-serif" font-size="20">Characters, objects,</text>
+    <text x="492" y="458" fill="#B5C2D8" font-family="Space Grotesk, Arial, sans-serif" font-size="20">and focal action</text>
+    <rect x="492" y="492" width="92" height="30" rx="15" fill="#8BD3FF" fill-opacity="0.14"/>
+    <text x="518" y="512" fill="#CDEEFF" font-family="Space Grotesk, Arial, sans-serif" font-size="15">Guided</text>
+  </g>
+  <g>
+    <rect x="686" y="304" width="202" height="172" rx="24" fill="#0C1728" stroke="#223148"/>
+    <text x="716" y="348" fill="#8BD3FF" font-family="Space Grotesk, Arial, sans-serif" font-size="16" letter-spacing="3.5">ATMOSPHERE</text>
+    <text x="716" y="394" fill="#F4F8FF" font-family="Fraunces, Georgia, serif" font-size="28">Emotional</text>
+    <text x="716" y="430" fill="#B5C2D8" font-family="Space Grotesk, Arial, sans-serif" font-size="20">Mood, weather, light</text>
+    <text x="716" y="458" fill="#B5C2D8" font-family="Space Grotesk, Arial, sans-serif" font-size="20">and world texture</text>
+    <rect x="716" y="492" width="110" height="30" rx="15" fill="#F7A072" fill-opacity="0.14"/>
+    <text x="742" y="512" fill="#FFD8BF" font-family="Space Grotesk, Arial, sans-serif" font-size="15">Expressive</text>
+  </g>
+  <g>
+    <rect x="910" y="304" width="202" height="172" rx="24" fill="#0C1728" stroke="#223148"/>
+    <text x="940" y="348" fill="#8BD3FF" font-family="Space Grotesk, Arial, sans-serif" font-size="16" letter-spacing="3.5">OUTPUT</text>
+    <text x="940" y="394" fill="#F4F8FF" font-family="Fraunces, Georgia, serif" font-size="28">Reusable</text>
+    <text x="940" y="430" fill="#B5C2D8" font-family="Space Grotesk, Arial, sans-serif" font-size="20">Export text, JSON,</text>
+    <text x="940" y="458" fill="#B5C2D8" font-family="Space Grotesk, Arial, sans-serif" font-size="20">templates and history</text>
+    <rect x="940" y="492" width="96" height="30" rx="15" fill="#8BD3FF" fill-opacity="0.14"/>
+    <text x="967" y="512" fill="#CDEEFF" font-family="Space Grotesk, Arial, sans-serif" font-size="15">Export</text>
+  </g>
+  <defs>
+    <linearGradient id="bg" x1="88" y1="60" x2="1114" y2="596" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A1527"/>
+      <stop offset="1" stop-color="#050A12"/>
+    </linearGradient>
+  </defs>
+</svg>

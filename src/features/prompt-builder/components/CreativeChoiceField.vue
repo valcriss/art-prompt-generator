@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import GuidedCombobox from '../../../components/ui/GuidedCombobox.vue'
+import type { AppLocale } from '../../../types/models'
 
 type ChoiceOption = {
   value: string
   label: string
   group?: string
+  featured?: boolean
 }
 
 const props = defineProps<{
@@ -20,10 +22,26 @@ const props = defineProps<{
   noResultsLabel: string
   canonicalLabel: string
   groupLabels: Record<string, string>
+  locale: AppLocale
+  allowCreate?: boolean
+  addActionLabel?: string
+  addPromptLabel?: string
+  addPromptPlaceholder?: string
+  addHelperText?: string
+  personalLabel?: string
+  defaultLabel?: string
+  showPersonalFilter?: boolean
+  allOptionsLabel?: string
+  personalOnlyLabel?: string
+  suggestedGroupLabel?: string
+  resolveSuggestedGroup?: (payload: { label: string; value: string }) => string
+  targetFieldLabel?: string
+  targetFieldValueLabel?: string
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
+  'save-custom': [payload: { label: string; value: string }]
 }>()
 
 const applyFeaturedOption = (value: string) => {
@@ -68,9 +86,27 @@ const applyFeaturedOption = (value: string) => {
         :custom-label="customLabel"
         :no-results-label="noResultsLabel"
         :canonical-label="canonicalLabel"
+        :featured-options="featuredOptions"
+        hide-featured-chips
         :group-labels="groupLabels"
         :helper-text="helper"
+        :locale="locale"
+        :allow-create="allowCreate"
+        :add-action-label="addActionLabel"
+        :add-prompt-label="addPromptLabel"
+        :add-prompt-placeholder="addPromptPlaceholder"
+        :add-helper-text="addHelperText"
+        :personal-label="personalLabel"
+        :default-label="defaultLabel"
+        :show-personal-filter="showPersonalFilter"
+        :all-options-label="allOptionsLabel"
+        :personal-only-label="personalOnlyLabel"
+        :suggested-group-label="suggestedGroupLabel"
+        :resolve-suggested-group="resolveSuggestedGroup"
+        :target-field-label="targetFieldLabel"
+        :target-field-value-label="targetFieldValueLabel"
         @update:model-value="emit('update:modelValue', $event)"
+        @save-custom="emit('save-custom', $event)"
       />
     </div>
   </div>

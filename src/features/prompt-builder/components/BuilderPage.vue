@@ -13,7 +13,14 @@ import CreativeChoiceField from './CreativeChoiceField.vue'
 import WorkspaceStageStepper from './WorkspaceStageStepper.vue'
 import type { ContextualBundleItem } from '../../../domain/contextualBundles'
 import { getLocalizedGuidedOptions } from '../../../domain/guidedVocabulary'
-import type { PromptMedium, SceneCharacter, SceneCharacterRole } from '../../../types/models'
+import { suggestCustomGuidedGroup } from '../../../domain/guidedVocabulary'
+import type {
+  AppLocale,
+  GuidedVocabularyKey,
+  PromptMedium,
+  SceneCharacter,
+  SceneCharacterRole,
+} from '../../../types/models'
 
 type WorkspaceStageId =
   | 'project'
@@ -22,7 +29,6 @@ type WorkspaceStageId =
   | 'scene'
   | 'composition'
   | 'details'
-  | 'output'
 type WorkspaceToolTab = 'inspire' | 'reuse' | 'project'
 interface StudioSelectOption {
   value: string
@@ -31,12 +37,38 @@ interface StudioSelectOption {
   badge?: string
 }
 
+interface SaveCustomGuidedPayload {
+  label: string
+  value: string
+}
+
+type ProjectGuidedFieldPath =
+  | 'subject.type'
+  | 'subject.position'
+  | 'environment.era'
+  | 'environment.season'
+  | 'environment.weather'
+  | 'environment.timeOfDay'
+  | 'motion.subjectMotion'
+  | 'motion.environmentMotion'
+  | 'camera.shotType'
+  | 'camera.angle'
+  | 'camera.movement'
+  | 'camera.lensFeel'
+  | 'mood'
+  | 'style'
+  | 'lighting'
+  | 'composition'
+  | 'camera.captureDevice'
+  | 'sceneCharacter.type'
+  | 'sceneCharacter.position'
+  | 'sceneCharacter.spatialRelation'
+
 const studio = reactive(usePromptStudio())
 const { t, locale } = useI18n()
 const router = useRouter()
 const activeStage = ref<WorkspaceStageId>('project')
 const activeToolTab = ref<WorkspaceToolTab>('inspire')
-const subjectLibrarySearch = ref('')
 const subjectLibraryDialogOpen = ref(false)
 const subjectLibraryDialogMode = ref<'subject' | 'secondary'>('subject')
 const subjectLibraryDialogCharacterId = ref<string | null>(null)
@@ -48,7 +80,6 @@ const stageOrder: WorkspaceStageId[] = [
   'scene',
   'composition',
   'details',
-  'output',
 ]
 
 const manageLinks = [
@@ -66,6 +97,7 @@ const localizedOptions = (key: Parameters<typeof getLocalizedGuidedOptions>[0]) 
       optionLocale.value,
       currentMedium.value,
       studio.currentProject,
+      studio.customGuidedOptions,
     ),
   )
 
@@ -95,13 +127,36 @@ const groupLabels = computed(() => ({
   motion: t('builder.guided.groups.motion'),
 }))
 
-const guidedProps = (helperText: string) => ({
+const addCustomHelperText = computed(() =>
+  optionLocale.value === 'fr'
+    ? t('builder.guided.addHelperWithPrompt')
+    : t('builder.guided.addHelper'),
+)
+
+const resolveSuggestedGroupLabel = (key: GuidedVocabularyKey, value: string) =>
+  t(`builder.guided.groups.${suggestCustomGuidedGroup(key, value)}`)
+
+const guidedProps = (helperText: string, targetFieldLabel?: string) => ({
   suggestionLabel: t('builder.guided.suggested'),
   customLabel: t('builder.guided.custom'),
   noResultsLabel: t('builder.guided.noResults'),
   canonicalLabel: t('builder.guided.canonical'),
   helperText,
   groupLabels: groupLabels.value,
+  locale: optionLocale.value,
+  allowCreate: true,
+  addActionLabel: t('builder.guided.addAction'),
+  addPromptLabel: t('builder.guided.promptLabel'),
+  addPromptPlaceholder: t('builder.guided.promptPlaceholder'),
+  addHelperText: addCustomHelperText.value,
+  personalLabel: t('builder.guided.personalOption'),
+  defaultLabel: t('builder.guided.defaultOption'),
+  showPersonalFilter: true,
+  allOptionsLabel: t('builder.guided.allOptions'),
+  personalOnlyLabel: t('builder.guided.personalOnly'),
+  suggestedGroupLabel: t('builder.guided.suggestedGroup'),
+  targetFieldLabel,
+  targetFieldValueLabel: t('builder.guided.targetField'),
 })
 
 const ensureSceneCharacters = () => {
@@ -130,6 +185,94 @@ const updateSceneCharacter = (
   const character = sceneCharacters.find((entry) => entry.id === characterId)
   if (!character) return
   ;(character[key] as string | SceneCharacterRole | undefined) = value
+}
+
+const applyProjectGuidedValue = (
+  path: ProjectGuidedFieldPath,
+  value: string,
+  characterId?: string,
+) => {
+  switch (path) {
+    case 'subject.type':
+      studio.currentProject.subject.type = value
+      break
+    case 'subject.position':
+      studio.currentProject.subject.position = value
+      break
+    case 'environment.era':
+      studio.currentProject.environment.era = value
+      break
+    case 'environment.season':
+      studio.currentProject.environment.season = value
+      break
+    case 'environment.weather':
+      studio.currentProject.environment.weather = value
+      break
+    case 'environment.timeOfDay':
+      studio.currentProject.environment.timeOfDay = value
+      break
+    case 'motion.subjectMotion':
+      studio.currentProject.motion!.subjectMotion = value
+      break
+    case 'motion.environmentMotion':
+      studio.currentProject.motion!.environmentMotion = value
+      break
+    case 'camera.shotType':
+      studio.currentProject.camera!.shotType = value
+      break
+    case 'camera.angle':
+      studio.currentProject.camera!.angle = value
+      break
+    case 'camera.movement':
+      studio.currentProject.camera!.movement = value
+      break
+    case 'camera.lensFeel':
+      studio.currentProject.camera!.lensFeel = value
+      break
+    case 'mood':
+      studio.currentProject.mood = value
+      break
+    case 'style':
+      studio.currentProject.style = value
+      break
+    case 'lighting':
+      studio.currentProject.lighting = value
+      break
+    case 'composition':
+      studio.currentProject.composition = value
+      break
+    case 'camera.captureDevice':
+      studio.currentProject.camera!.captureDevice = value
+      break
+    case 'sceneCharacter.type':
+      if (characterId) updateSceneCharacter(characterId, 'type', value)
+      break
+    case 'sceneCharacter.position':
+      if (characterId) updateSceneCharacter(characterId, 'position', value)
+      break
+    case 'sceneCharacter.spatialRelation':
+      if (characterId) updateSceneCharacter(characterId, 'spatialRelation', value)
+      break
+  }
+}
+
+const saveProjectCustomGuidedValue = async (
+  key: GuidedVocabularyKey,
+  path: ProjectGuidedFieldPath,
+  payload: SaveCustomGuidedPayload,
+  characterId?: string,
+) => {
+  const savedValue = await studio.addCustomGuidedOption({
+    key,
+    label: payload.label,
+    value: payload.value,
+    locale: optionLocale.value as AppLocale,
+    medium: currentMedium.value,
+  })
+
+  if (!savedValue) return
+
+  applyProjectGuidedValue(path, savedValue, characterId)
 }
 
 const characterReferenceLabel = (
@@ -181,11 +324,16 @@ const sceneCharacterReferenceOptions = (characterId: string): StudioSelectOption
 const getOptionLabel = (options: { value: string; label: string }[], value: string) =>
   options.find((option) => option.value === value)?.label ?? value
 
-const getFeaturedOptions = (options: { value: string; label: string }[], limit = 3) =>
-  options.slice(0, limit)
+const getFeaturedOptions = (
+  options: { value: string; label: string; featured?: boolean }[],
+  limit = 5,
+) => {
+  const curated = options.filter((option) => option.featured)
+  return (curated.length ? curated : options).slice(0, limit)
+}
 
 const subjectLibraryCharacters = computed(() => {
-  const query = subjectLibrarySearch.value.trim().toLowerCase()
+  const query = studio.subjectLibrarySearch.trim().toLowerCase()
 
   return studio.libraryElements
     .filter((element) => {
@@ -215,7 +363,6 @@ const openSecondaryCharacterLibraryDialog = (characterId: string) => {
 const closeSubjectLibraryDialog = () => {
   subjectLibraryDialogOpen.value = false
   subjectLibraryDialogCharacterId.value = null
-  subjectLibrarySearch.value = ''
 }
 
 const applySubjectLibraryCharacter = (elementId: string) => {
@@ -303,7 +450,6 @@ const stageHasContent = computed<Record<WorkspaceStageId, boolean>>(() => ({
   details: Boolean(
     studio.currentProject.details.length || studio.linkedLibraryElements.length,
   ),
-  output: Boolean(studio.currentPositivePrompt.trim()),
 }))
 
 const workspaceStages = computed<
@@ -593,10 +739,6 @@ const selectStage = (stageId: string) => {
   if (stageId === 'details') {
     activeToolTab.value = 'inspire'
   }
-
-  if (stageId === 'output') {
-    activeToolTab.value = 'project'
-  }
 }
 
 const goToAdjacentStage = (direction: -1 | 1) => {
@@ -749,11 +891,11 @@ const openTemplateWorkshop = async () => {
               </button>
             </div>
             <div class="grid gap-4 md:grid-cols-2">
-              <FieldBlock :label="t('builder.fields.subjectType')"><GuidedCombobox v-model="studio.currentProject.subject.type" :options="subjectTypeOptions" :placeholder="t('builder.fields.subjectType')" :icon="['fas', 'object-group']" v-bind="guidedProps(t('builder.guided.subjectHint'))" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.subjectType')"><GuidedCombobox v-model="studio.currentProject.subject.type" :options="subjectTypeOptions" :placeholder="t('builder.fields.subjectType')" :icon="['fas', 'object-group']" v-bind="guidedProps(t('builder.guided.subjectHint'), t('builder.fields.subjectType'))" @save-custom="saveProjectCustomGuidedValue('subjectType', 'subject.type', $event)" /></FieldBlock>
               <FieldBlock :label="t('builder.fields.subjectDescription')"><textarea v-model="studio.currentProject.subject.description" rows="3" class="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none transition focus:border-glow/40" /></FieldBlock>
               <FieldBlock :label="t('builder.fields.subjectAppearance')"><textarea v-model="studio.currentProject.subject.appearance" rows="3" class="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none transition focus:border-glow/40" /></FieldBlock>
               <FieldBlock :label="t('builder.fields.subjectAction')"><textarea v-model="studio.currentProject.subject.action" rows="3" class="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none transition focus:border-glow/40" /></FieldBlock>
-              <FieldBlock :label="t('builder.fields.subjectPosition')"><GuidedCombobox v-model="studio.currentProject.subject.position" :options="scenePositionOptions" :placeholder="t('builder.fields.subjectPosition')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.characters.positionHint'))" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.subjectPosition')"><GuidedCombobox v-model="studio.currentProject.subject.position" :options="scenePositionOptions" :placeholder="t('builder.fields.subjectPosition')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.characters.positionHint'), t('builder.fields.subjectPosition'))" @save-custom="saveProjectCustomGuidedValue('scenePosition', 'subject.position', $event)" /></FieldBlock>
             </div>
           </section>
 
@@ -805,7 +947,7 @@ const openTemplateWorkshop = async () => {
               <div class="relative mt-5">
                 <FontAwesomeIcon :icon="['fas', 'magnifying-glass']" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
-                  v-model="subjectLibrarySearch"
+                  v-model="studio.subjectLibrarySearch"
                   :placeholder="t('builder.characters.librarySearch')"
                   class="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-glow/40"
                 />
@@ -932,8 +1074,9 @@ const openTemplateWorkshop = async () => {
                       :options="subjectTypeOptions"
                       :placeholder="t('builder.fields.subjectType')"
                       :icon="['fas', 'object-group']"
-                      v-bind="guidedProps(t('builder.guided.subjectHint'))"
+                      v-bind="guidedProps(t('builder.guided.subjectHint'), t('builder.fields.subjectType'))"
                       @update:model-value="updateSceneCharacter(character.id, 'type', $event)"
+                      @save-custom="saveProjectCustomGuidedValue('subjectType', 'sceneCharacter.type', $event, character.id)"
                     />
                   </FieldBlock>
 
@@ -970,8 +1113,9 @@ const openTemplateWorkshop = async () => {
                       :options="scenePositionOptions"
                       :placeholder="t('builder.characters.position')"
                       :icon="['fas', 'layer-group']"
-                      v-bind="guidedProps(t('builder.characters.positionHint'))"
+                      v-bind="guidedProps(t('builder.characters.positionHint'), t('builder.fields.subjectPosition'))"
                       @update:model-value="updateSceneCharacter(character.id, 'position', $event)"
+                      @save-custom="saveProjectCustomGuidedValue('scenePosition', 'sceneCharacter.position', $event, character.id)"
                     />
                   </FieldBlock>
 
@@ -981,8 +1125,9 @@ const openTemplateWorkshop = async () => {
                       :options="spatialRelationOptions"
                       :placeholder="t('builder.characters.spatialRelation')"
                       :icon="['fas', 'sliders']"
-                      v-bind="guidedProps(t('builder.characters.spatialRelationHint'))"
+                      v-bind="guidedProps(t('builder.characters.spatialRelationHint'), t('builder.characters.spatialRelation'))"
                       @update:model-value="updateSceneCharacter(character.id, 'spatialRelation', $event)"
+                      @save-custom="saveProjectCustomGuidedValue('spatialRelation', 'sceneCharacter.spatialRelation', $event, character.id)"
                     />
                   </FieldBlock>
 
@@ -1023,10 +1168,10 @@ const openTemplateWorkshop = async () => {
               <div class="md:col-span-2">
                 <FieldBlock :label="t('builder.fields.worldDescription')"><textarea v-model="studio.currentProject.environment.description" rows="3" class="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none transition focus:border-glow/40" /></FieldBlock>
               </div>
-              <FieldBlock :label="t('builder.fields.era')"><GuidedCombobox v-model="studio.currentProject.environment.era" :options="eraOptions" :placeholder="t('builder.fields.era')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.guided.environmentHint'))" /></FieldBlock>
-              <FieldBlock :label="t('builder.fields.season')"><GuidedCombobox v-model="studio.currentProject.environment.season" :options="seasonOptions" :placeholder="t('builder.fields.season')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.guided.environmentHint'))" /></FieldBlock>
-              <FieldBlock :label="t('builder.fields.weather')"><GuidedCombobox v-model="studio.currentProject.environment.weather" :options="weatherOptions" :placeholder="t('builder.fields.weather')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.guided.environmentHint'))" /></FieldBlock>
-              <FieldBlock :label="t('builder.fields.timeOfDay')"><GuidedCombobox v-model="studio.currentProject.environment.timeOfDay" :options="timeOfDayOptions" :placeholder="t('builder.fields.timeOfDay')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.guided.environmentHint'))" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.era')"><GuidedCombobox v-model="studio.currentProject.environment.era" :options="eraOptions" :placeholder="t('builder.fields.era')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.guided.environmentHint'), t('builder.fields.era'))" @save-custom="saveProjectCustomGuidedValue('era', 'environment.era', $event)" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.season')"><GuidedCombobox v-model="studio.currentProject.environment.season" :options="seasonOptions" :placeholder="t('builder.fields.season')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.guided.environmentHint'), t('builder.fields.season'))" @save-custom="saveProjectCustomGuidedValue('season', 'environment.season', $event)" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.weather')"><GuidedCombobox v-model="studio.currentProject.environment.weather" :options="weatherOptions" :placeholder="t('builder.fields.weather')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.guided.environmentHint'), t('builder.fields.weather'))" @save-custom="saveProjectCustomGuidedValue('weather', 'environment.weather', $event)" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.timeOfDay')"><GuidedCombobox v-model="studio.currentProject.environment.timeOfDay" :options="timeOfDayOptions" :placeholder="t('builder.fields.timeOfDay')" :icon="['fas', 'layer-group']" v-bind="guidedProps(t('builder.guided.environmentHint'), t('builder.fields.timeOfDay'))" @save-custom="saveProjectCustomGuidedValue('timeOfDay', 'environment.timeOfDay', $event)" /></FieldBlock>
             </div>
           </section>
 
@@ -1034,25 +1179,25 @@ const openTemplateWorkshop = async () => {
             <h3 class="text-lg font-semibold text-white">{{ t('builder.sections.motion') }}</h3>
             <p class="text-sm leading-7 text-slate-300">{{ t('studio.workspace.motionSubtitle') }}</p>
             <div class="grid gap-4 md:grid-cols-2">
-              <FieldBlock :label="t('builder.fields.subjectMotion')"><GuidedCombobox v-model="studio.currentProject.motion!.subjectMotion" :options="subjectMotionOptions" :placeholder="t('builder.fields.subjectMotion')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'))" /></FieldBlock>
-              <FieldBlock :label="t('builder.fields.environmentMotion')"><GuidedCombobox v-model="studio.currentProject.motion!.environmentMotion" :options="environmentMotionOptions" :placeholder="t('builder.fields.environmentMotion')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'))" /></FieldBlock>
-              <FieldBlock :label="t('builder.fields.shotType')"><GuidedCombobox v-model="studio.currentProject.camera!.shotType" :options="shotTypeOptions" :placeholder="t('builder.fields.shotType')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'))" /></FieldBlock>
-              <FieldBlock :label="t('builder.fields.angle')"><GuidedCombobox v-model="studio.currentProject.camera!.angle" :options="angleOptions" :placeholder="t('builder.fields.angle')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'))" /></FieldBlock>
-              <FieldBlock :label="t('builder.fields.movement')"><GuidedCombobox v-model="studio.currentProject.camera!.movement" :options="movementOptions" :placeholder="t('builder.fields.movement')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'))" /></FieldBlock>
-              <FieldBlock :label="t('builder.fields.lensFeel')"><GuidedCombobox v-model="studio.currentProject.camera!.lensFeel" :options="lensFeelOptions" :placeholder="t('builder.fields.lensFeel')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'))" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.subjectMotion')"><GuidedCombobox v-model="studio.currentProject.motion!.subjectMotion" :options="subjectMotionOptions" :placeholder="t('builder.fields.subjectMotion')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'), t('builder.fields.subjectMotion'))" @save-custom="saveProjectCustomGuidedValue('subjectMotion', 'motion.subjectMotion', $event)" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.environmentMotion')"><GuidedCombobox v-model="studio.currentProject.motion!.environmentMotion" :options="environmentMotionOptions" :placeholder="t('builder.fields.environmentMotion')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'), t('builder.fields.environmentMotion'))" @save-custom="saveProjectCustomGuidedValue('environmentMotion', 'motion.environmentMotion', $event)" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.shotType')"><GuidedCombobox v-model="studio.currentProject.camera!.shotType" :options="shotTypeOptions" :placeholder="t('builder.fields.shotType')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'), t('builder.fields.shotType'))" @save-custom="saveProjectCustomGuidedValue('shotType', 'camera.shotType', $event)" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.angle')"><GuidedCombobox v-model="studio.currentProject.camera!.angle" :options="angleOptions" :placeholder="t('builder.fields.angle')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'), t('builder.fields.angle'))" @save-custom="saveProjectCustomGuidedValue('angle', 'camera.angle', $event)" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.movement')"><GuidedCombobox v-model="studio.currentProject.camera!.movement" :options="movementOptions" :placeholder="t('builder.fields.movement')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'), t('builder.fields.movement'))" @save-custom="saveProjectCustomGuidedValue('movement', 'camera.movement', $event)" /></FieldBlock>
+              <FieldBlock :label="t('builder.fields.lensFeel')"><GuidedCombobox v-model="studio.currentProject.camera!.lensFeel" :options="lensFeelOptions" :placeholder="t('builder.fields.lensFeel')" :icon="['fas', 'film']" v-bind="guidedProps(t('builder.guided.motionHint'), t('builder.fields.lensFeel'))" @save-custom="saveProjectCustomGuidedValue('lensFeel', 'camera.lensFeel', $event)" /></FieldBlock>
             </div>
           </section>
         </div>
 
         <div v-else-if="activeStage === 'scene'" class="grid gap-4 xl:grid-cols-2">
-          <CreativeChoiceField :label="t('builder.fields.mood')" :helper="t('studio.choiceCards.mood')" :placeholder="t('builder.fields.mood')" :icon="['fas', 'wand-magic-sparkles']" :model-value="studio.currentProject.mood" :options="moodOptions" :featured-options="getFeaturedOptions(moodOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" @update:model-value="studio.currentProject.mood = $event" />
+          <CreativeChoiceField :label="t('builder.fields.mood')" :helper="t('studio.choiceCards.mood')" :placeholder="t('builder.fields.mood')" :icon="['fas', 'wand-magic-sparkles']" :model-value="studio.currentProject.mood" :options="moodOptions" :featured-options="getFeaturedOptions(moodOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.mood')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('mood', value)" @update:model-value="studio.currentProject.mood = $event" @save-custom="saveProjectCustomGuidedValue('mood', 'mood', $event)" />
         </div>
 
         <div v-else-if="activeStage === 'composition'" class="grid gap-4 xl:grid-cols-2">
-          <CreativeChoiceField :label="t('builder.fields.style')" :helper="t('studio.choiceCards.style')" :placeholder="t('builder.fields.style')" :icon="['fas', 'sliders']" :model-value="studio.currentProject.style" :options="styleOptions" :featured-options="getFeaturedOptions(styleOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" @update:model-value="studio.currentProject.style = $event" />
-          <CreativeChoiceField :label="t('builder.fields.lighting')" :helper="t('studio.choiceCards.lighting')" :placeholder="t('builder.fields.lighting')" :icon="['fas', 'image']" :model-value="studio.currentProject.lighting" :options="lightingOptions" :featured-options="getFeaturedOptions(lightingOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" @update:model-value="studio.currentProject.lighting = $event" />
-          <CreativeChoiceField :label="t('builder.fields.composition')" :helper="t('studio.choiceCards.composition')" :placeholder="t('builder.fields.composition')" :icon="['fas', 'object-group']" :model-value="studio.currentProject.composition" :options="compositionOptions" :featured-options="getFeaturedOptions(compositionOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" @update:model-value="studio.currentProject.composition = $event" />
-          <CreativeChoiceField :label="t('builder.fields.captureDevice')" :helper="t('studio.choiceCards.captureDevice')" :placeholder="t('builder.fields.captureDevice')" :icon="['fas', 'camera']" :model-value="studio.currentProject.camera?.captureDevice" :options="captureDeviceOptions" :featured-options="getFeaturedOptions(captureDeviceOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" @update:model-value="studio.currentProject.camera!.captureDevice = $event" />
+          <CreativeChoiceField :label="t('builder.fields.style')" :helper="t('studio.choiceCards.style')" :placeholder="t('builder.fields.style')" :icon="['fas', 'sliders']" :model-value="studio.currentProject.style" :options="styleOptions" :featured-options="getFeaturedOptions(styleOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.style')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('style', value)" @update:model-value="studio.currentProject.style = $event" @save-custom="saveProjectCustomGuidedValue('style', 'style', $event)" />
+          <CreativeChoiceField :label="t('builder.fields.lighting')" :helper="t('studio.choiceCards.lighting')" :placeholder="t('builder.fields.lighting')" :icon="['fas', 'image']" :model-value="studio.currentProject.lighting" :options="lightingOptions" :featured-options="getFeaturedOptions(lightingOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.lighting')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('lighting', value)" @update:model-value="studio.currentProject.lighting = $event" @save-custom="saveProjectCustomGuidedValue('lighting', 'lighting', $event)" />
+          <CreativeChoiceField :label="t('builder.fields.composition')" :helper="t('studio.choiceCards.composition')" :placeholder="t('builder.fields.composition')" :icon="['fas', 'object-group']" :model-value="studio.currentProject.composition" :options="compositionOptions" :featured-options="getFeaturedOptions(compositionOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.composition')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('composition', value)" @update:model-value="studio.currentProject.composition = $event" @save-custom="saveProjectCustomGuidedValue('composition', 'composition', $event)" />
+          <CreativeChoiceField :label="t('builder.fields.captureDevice')" :helper="t('studio.choiceCards.captureDevice')" :placeholder="t('builder.fields.captureDevice')" :icon="['fas', 'camera']" :model-value="studio.currentProject.camera?.captureDevice" :options="captureDeviceOptions" :featured-options="getFeaturedOptions(captureDeviceOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.captureDevice')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('captureDevice', value)" @update:model-value="studio.currentProject.camera!.captureDevice = $event" @save-custom="saveProjectCustomGuidedValue('captureDevice', 'camera.captureDevice', $event)" />
         </div>
 
         <div v-else-if="activeStage === 'details'" class="space-y-6">
@@ -1081,43 +1226,6 @@ const openTemplateWorkshop = async () => {
             <p v-else class="mt-4 text-sm leading-7 text-slate-400">
               {{ t('studio.workspace.linkedEmpty') }}
             </p>
-          </section>
-        </div>
-
-        <div v-else class="space-y-6">
-          <section class="rounded-[26px] border border-white/8 bg-white/[0.03] p-4 md:p-5">
-            <div>
-              <div class="flex flex-col gap-3">
-                <div>
-                  <h3 class="text-lg font-semibold text-white">{{ t('studio.output.title') }}</h3>
-                  <p class="mt-2 text-sm leading-7 text-slate-400">{{ t('studio.output.subtitle') }}</p>
-                </div>
-                <div class="flex flex-nowrap gap-2 overflow-x-auto pb-1">
-                  <button class="whitespace-nowrap rounded-full bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:-translate-y-0.5" @click="studio.saveProject">
-                    <FontAwesomeIcon :icon="['far', 'floppy-disk']" class="mr-2" />
-                    {{ t('app.saveProject') }}
-                  </button>
-                  <button class="whitespace-nowrap rounded-full border border-glow/20 bg-glow/10 px-4 py-3 text-sm font-semibold text-glow transition hover:bg-glow/15" @click="studio.exportText">
-                    <FontAwesomeIcon :icon="['fas', 'file-arrow-down']" class="mr-2" />
-                    {{ t('app.exportText') }}
-                  </button>
-                  <button class="whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10" @click="openTemplateWorkshop">
-                    <FontAwesomeIcon :icon="['fas', 'object-group']" class="mr-2" />
-                    {{ t('preview.saveAsPreset') }}
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div v-for="card in outputSummaryCards" :key="card.label" class="rounded-[22px] border border-white/10 bg-slate-950/35 px-4 py-4">
-                <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">{{ card.label }}</p>
-                <p class="mt-3 font-display text-2xl text-white">{{ card.value }}</p>
-              </div>
-            </div>
-          </section>
-
-          <section class="rounded-[26px] border border-dashed border-white/10 bg-white/[0.03] p-4 md:p-5">
-            <p class="text-sm leading-7 text-slate-300">{{ t('studio.output.note') }}</p>
           </section>
         </div>
       </BasePanel>
@@ -1174,6 +1282,17 @@ const openTemplateWorkshop = async () => {
           </span>
         </div>
 
+        <div class="mb-4 grid gap-3 sm:grid-cols-2">
+          <div v-for="card in outputSummaryCards" :key="card.label" class="rounded-[22px] border border-white/10 bg-slate-950/35 px-4 py-4">
+            <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">{{ card.label }}</p>
+            <p class="mt-3 font-display text-2xl text-white">{{ card.value }}</p>
+          </div>
+        </div>
+
+        <div class="mb-4 rounded-[22px] border border-dashed border-white/10 bg-white/[0.03] px-4 py-4">
+          <p class="text-sm leading-7 text-slate-300">{{ t('studio.output.note') }}</p>
+        </div>
+
         <div class="space-y-4">
           <div class="rounded-[24px] border border-white/10 bg-white/5 p-4">
             <div class="mb-2 flex items-center justify-between gap-3">
@@ -1228,57 +1347,108 @@ const openTemplateWorkshop = async () => {
         <div v-if="activeToolTab === 'inspire'" class="mt-5 space-y-5">
           <section>
             <div>
-              <p class="font-medium text-white">{{ t('builder.guided.smartTitle') }}</p>
-              <p class="mt-1 text-sm leading-6 text-slate-400">{{ t('builder.guided.smartSubtitle') }}</p>
+              <p class="font-medium text-white">{{ t('builder.guided.panelTitle') }}</p>
+              <p class="mt-1 text-sm leading-6 text-slate-400">{{ t('builder.guided.panelSubtitle') }}</p>
             </div>
-            <div v-if="studio.contextualBundles.length" class="mt-3 grid gap-3">
-              <div
-                v-for="bundle in studio.contextualBundles"
-                :key="bundle.id"
-                class="rounded-[24px] border p-4"
-                :class="bundleToneClass(bundle.tone)"
-              >
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex items-start gap-3">
-                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-slate-950/55 text-glow">
-                      <FontAwesomeIcon :icon="bundleIcon(bundle.icon)" />
-                    </div>
-                    <div class="space-y-1">
-                      <p class="text-xs uppercase tracking-[0.24em] text-slate-500">{{ t(bundle.titleKey) }}</p>
-                      <p class="text-sm leading-6 text-white">{{ t(bundle.subtitleKey) }}</p>
-                    </div>
-                  </div>
-                  <button type="button" class="rounded-full border border-glow/20 bg-glow/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-glow transition hover:bg-glow/15" @click="studio.applyContextualBundle(bundle)">
-                    {{ t('builder.guided.applyBundle') }}
-                  </button>
+            <div class="mt-3 rounded-[24px] border border-white/10 bg-white/[0.04] p-5">
+              <div class="flex items-start gap-3">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-glow/20 bg-glow/10 text-glow">
+                  <FontAwesomeIcon :icon="['fas', 'wand-magic-sparkles']" />
                 </div>
-                <div class="mt-4 rounded-[18px] border border-white/10 bg-slate-950/35 px-4 py-3">
-                  <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">{{ t('builder.guided.reasonLabel') }}</p>
-                  <p class="mt-2 text-sm leading-6 text-slate-300">{{ t(bundle.reasonKey) }}</p>
-                </div>
-                <div class="mt-4">
-                  <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">{{ t('builder.guided.impactLabel') }}</p>
-                </div>
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <span v-for="item in bundle.items" :key="`${bundle.id}-${item.field}-${item.value}`" class="rounded-full border border-glow/15 bg-glow/10 px-3 py-1.5 text-xs text-glow">
-                    {{ bundleItemLabel(item) }}
-                  </span>
+                <div>
+                  <p class="font-medium text-white">{{ t('builder.guided.smartTitle') }}</p>
+                  <p class="mt-1 text-sm leading-6 text-slate-300">{{ t('builder.guided.smartSubtitle') }}</p>
                 </div>
               </div>
-            </div>
-            <div v-else class="mt-3 rounded-[24px] border border-dashed border-white/10 bg-white/[0.04] p-5">
-              <p class="font-medium text-white">{{ t('builder.guided.smartEmptyTitle') }}</p>
-              <p class="mt-2 text-sm leading-6 text-slate-400">{{ t('builder.guided.smartEmptyText') }}</p>
-            </div>
-          </section>
 
-          <section>
-            <p class="font-medium text-white">{{ t('builder.suggestions.label') }}</p>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <button v-for="suggestion in studio.suggestions" :key="suggestion.id" class="rounded-full border border-glow/20 bg-glow/10 px-4 py-2 text-sm text-glow" @click="studio.applySuggestion(suggestion.id)">
-                <FontAwesomeIcon :icon="['far', 'lightbulb']" class="mr-2" />
-                {{ t(suggestion.labelKey) }}
-              </button>
+              <div v-if="studio.contextualBundles.length" class="mt-4 space-y-4">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="rounded-full border border-glow/20 bg-glow/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-glow">{{ t('builder.guided.majorTitle') }}</span>
+                    <p class="text-sm text-slate-400">{{ t('builder.guided.majorSubtitle') }}</p>
+                  </div>
+                  <div class="mt-3 grid gap-3">
+                    <div
+                      v-for="bundle in studio.contextualBundles"
+                      :key="bundle.id"
+                      class="rounded-[24px] border p-4"
+                      :class="bundleToneClass(bundle.tone)"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start gap-3">
+                          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-slate-950/55 text-glow">
+                            <FontAwesomeIcon :icon="bundleIcon(bundle.icon)" />
+                          </div>
+                          <div class="space-y-1">
+                            <p class="text-xs uppercase tracking-[0.24em] text-slate-500">{{ t(bundle.titleKey) }}</p>
+                            <p class="text-sm leading-6 text-white">{{ t(bundle.subtitleKey) }}</p>
+                          </div>
+                        </div>
+                        <button type="button" class="rounded-full border border-glow/20 bg-glow/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-glow transition hover:bg-glow/15" @click="studio.applyContextualBundle(bundle)">
+                          {{ t('builder.guided.applyBundle') }}
+                        </button>
+                      </div>
+                      <div class="mt-4 rounded-[18px] border border-white/10 bg-slate-950/35 px-4 py-3">
+                        <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">{{ t('builder.guided.reasonLabel') }}</p>
+                        <p class="mt-2 text-sm leading-6 text-slate-300">{{ t(bundle.reasonKey) }}</p>
+                      </div>
+                      <div class="mt-4">
+                        <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">{{ t('builder.guided.impactLabel') }}</p>
+                      </div>
+                      <div class="mt-3 flex flex-wrap gap-2">
+                        <span v-for="item in bundle.items" :key="`${bundle.id}-${item.field}-${item.value}`" class="rounded-full border border-glow/15 bg-glow/10 px-3 py-1.5 text-xs text-glow">
+                          {{ bundleItemLabel(item) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="mt-4 rounded-[24px] border border-dashed border-white/10 bg-slate-950/25 p-5">
+                <p class="font-medium text-white">{{ t('builder.guided.smartEmptyTitle') }}</p>
+                <p class="mt-2 text-sm leading-6 text-slate-400">{{ t('builder.guided.smartEmptyText') }}</p>
+              </div>
+
+              <div class="mt-4 border-t border-white/10 pt-4">
+                <div class="flex items-center gap-2">
+                  <span class="rounded-full border border-peach/20 bg-peach/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-peach">{{ t('builder.suggestions.fineTitle') }}</span>
+                  <p class="text-sm text-slate-400">{{ t('builder.suggestions.fineSubtitle') }}</p>
+                </div>
+                <div class="mt-3 rounded-[22px] border border-white/10 bg-slate-950/25 px-4 py-3 text-sm leading-6 text-slate-300">
+                  {{ t('builder.suggestions.note') }}
+                </div>
+                <div v-if="studio.suggestions.length" class="mt-3 grid gap-3">
+                  <div
+                    v-for="suggestion in studio.suggestions"
+                    :key="suggestion.id"
+                    class="rounded-[24px] border p-4"
+                    :class="bundleToneClass(suggestion.tone)"
+                  >
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex items-start gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-slate-950/55 text-glow">
+                          <FontAwesomeIcon :icon="['fas', suggestion.icon]" />
+                        </div>
+                        <div>
+                          <p class="font-medium text-white">{{ t(suggestion.labelKey) }}</p>
+                          <p class="mt-1 text-sm leading-6 text-slate-300">{{ t(suggestion.descriptionKey) }}</p>
+                        </div>
+                      </div>
+                      <button type="button" class="rounded-full border border-glow/20 bg-glow/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-glow transition hover:bg-glow/15" @click="studio.applySuggestion(suggestion.id)">
+                        {{ t('builder.suggestions.apply') }}
+                      </button>
+                    </div>
+                    <div class="mt-4 rounded-[18px] border border-white/10 bg-slate-950/35 px-4 py-3">
+                      <p class="text-[10px] uppercase tracking-[0.22em] text-slate-500">{{ t('builder.suggestions.reasonLabel') }}</p>
+                      <p class="mt-2 text-sm leading-6 text-slate-300">{{ t(suggestion.reasonKey) }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="mt-3 rounded-[24px] border border-dashed border-white/10 bg-slate-950/25 p-5">
+                  <p class="font-medium text-white">{{ t('builder.suggestions.emptyTitle') }}</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-400">{{ t('builder.suggestions.emptyText') }}</p>
+                </div>
+              </div>
             </div>
           </section>
         </div>

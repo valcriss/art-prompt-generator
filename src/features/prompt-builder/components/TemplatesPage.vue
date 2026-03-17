@@ -6,11 +6,14 @@ import ChipTag from '../../../components/ui/ChipTag.vue'
 import FieldBlock from '../../../components/ui/FieldBlock.vue'
 import GuidedCombobox from '../../../components/ui/GuidedCombobox.vue'
 import { usePromptStudio } from '../../../composables/usePromptStudio'
+import { suggestCustomGuidedGroup } from '../../../domain/guidedVocabulary'
 import { getLocalizedTemplateFieldOptions } from '../../../domain/promptTemplateSchema'
+import type { AppLocale, GuidedVocabularyKey } from '../../../types/models'
 
 const studio = reactive(usePromptStudio())
 const { t, locale } = useI18n()
 const templateFilterKeys = ['all', 'image', 'video'] as const
+const currentLocale = computed(() => locale.value as AppLocale)
 
 const templateFieldOptions = computed(() =>
   Object.fromEntries(
@@ -18,12 +21,45 @@ const templateFieldOptions = computed(() =>
       field.key,
       getLocalizedTemplateFieldOptions(
         field,
-        locale.value as 'en' | 'fr',
+        currentLocale.value,
         studio.templateDraftMedium,
+        studio.customGuidedOptions,
       ),
     ]),
   ) as Record<string, { value: string; label: string; group?: string }[]>,
 )
+
+const addCustomHelperText = computed(() =>
+  locale.value === 'fr'
+    ? t('builder.guided.addHelperWithPrompt')
+    : t('builder.guided.addHelper'),
+)
+
+const resolveSuggestedGroupLabel = (key: GuidedVocabularyKey, value: string) =>
+  t(`builder.guided.groups.${suggestCustomGuidedGroup(key, value)}`)
+
+const resolveTemplateSuggestedGroup = (fieldKey?: GuidedVocabularyKey) =>
+  fieldKey
+    ? ({ value }: { label: string; value: string }) => resolveSuggestedGroupLabel(fieldKey, value)
+    : undefined
+
+const saveTemplateCustomGuidedValue = async (
+  fieldKey: string,
+  guidedKey: GuidedVocabularyKey,
+  payload: { label: string; value: string },
+) => {
+  const savedValue = await studio.addCustomGuidedOption({
+    key: guidedKey,
+    label: payload.label,
+    value: payload.value,
+    locale: currentLocale.value,
+    medium: studio.templateDraftMedium,
+  })
+
+  if (!savedValue) return
+
+  studio.updateTemplateDraftProfileValue(fieldKey, savedValue)
+}
 
 if (
   !studio.templateDraft.id &&
@@ -106,7 +142,23 @@ const templateShowcaseCards = computed(() => [
                       motion: t('builder.guided.groups.motion'),
                     }"
                     :helper-text="t('templates.structured.helper')"
+                    :locale="currentLocale"
+                    :allow-create="Boolean(field.guidedKey)"
+                    :add-action-label="t('builder.guided.addAction')"
+                    :add-prompt-label="t('builder.guided.promptLabel')"
+                    :add-prompt-placeholder="t('builder.guided.promptPlaceholder')"
+                    :add-helper-text="addCustomHelperText"
+                    :personal-label="t('builder.guided.personalOption')"
+                    :default-label="t('builder.guided.defaultOption')"
+                    show-personal-filter
+                    :all-options-label="t('builder.guided.allOptions')"
+                    :personal-only-label="t('builder.guided.personalOnly')"
+                    :suggested-group-label="t('builder.guided.suggestedGroup')"
+                    :target-field-label="t(field.labelKey)"
+                    :target-field-value-label="t('builder.guided.targetField')"
+                    :resolve-suggested-group="resolveTemplateSuggestedGroup(field.guidedKey)"
                     @update:model-value="studio.updateTemplateDraftProfileValue(field.key, $event)"
+                    @save-custom="field.guidedKey && saveTemplateCustomGuidedValue(field.key, field.guidedKey, $event)"
                   />
                 </FieldBlock>
               </div>

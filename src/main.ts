@@ -3,6 +3,7 @@ import './style.css'
 import App from './App.vue'
 import { i18n } from './i18n'
 import { router } from './router'
+import { installSeo } from './utils/seo'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {
@@ -49,4 +50,10 @@ library.add(
   faLightbulb,
 )
 
-createApp(App).component('FontAwesomeIcon', FontAwesomeIcon).use(i18n).use(router).mount('#app')
+const app = createApp(App)
+
+app.component('FontAwesomeIcon', FontAwesomeIcon).use(i18n).use(router)
+
+installSeo(router, i18n)
+
+app.mount('#app')

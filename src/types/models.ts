@@ -1,5 +1,32 @@
 export type PromptMedium = 'image' | 'video'
 
+export type GuidedGroup =
+  | 'core'
+  | 'atmospheric'
+  | 'cinematic'
+  | 'narrative'
+  | 'motion'
+
+export type GuidedVocabularyKey =
+  | 'subjectType'
+  | 'era'
+  | 'season'
+  | 'weather'
+  | 'timeOfDay'
+  | 'mood'
+  | 'style'
+  | 'lighting'
+  | 'composition'
+  | 'scenePosition'
+  | 'spatialRelation'
+  | 'captureDevice'
+  | 'subjectMotion'
+  | 'environmentMotion'
+  | 'shotType'
+  | 'angle'
+  | 'movement'
+  | 'lensFeel'
+
 export interface SubjectBlock {
   type?: string
   description?: string
@@ -117,9 +144,38 @@ export interface PromptTemplate {
 
 export type AppLocale = 'en' | 'fr'
 
+export interface CustomGuidedOption {
+  id: string
+  key: GuidedVocabularyKey
+  value: string
+  labels: Record<AppLocale, string>
+  group: GuidedGroup
+  mediums?: PromptMedium[]
+  createdAt: string
+  updatedAt: string
+}
+
 export interface StudioQuickAccessPreferences {
   quickTemplateSearch: string
   quickTemplateFilter: 'all' | PromptMedium
   quickLibrarySearch: string
   quickLibraryFilter: 'all' | LibraryElementType
+}
+
+export interface PersonalVocabularyPreferences {
+  search: string
+  groupFilter: 'all' | GuidedGroup
+  sort: 'smart' | 'recent' | 'field' | 'group' | 'name'
+}
+
+export interface StudioWorkspacePreferences {
+  historySearch: string
+  historyMediumFilter: 'all' | PromptMedium
+  historySort: 'recent' | 'title' | 'medium'
+  librarySearch: string
+  libraryFilter: 'all' | LibraryElementType
+  librarySort: 'recent' | 'name' | 'type'
+  templateSearch: string
+  templateFilter: 'all' | PromptMedium
+  subjectLibrarySearch: string
 }

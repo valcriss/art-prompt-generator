@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { onBeforeUnmount, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import LocaleFlagButton from '../../../components/ui/LocaleFlagButton.vue'
@@ -19,6 +19,60 @@ const journey = [
   'landing.journey.scene',
   'landing.journey.prompt',
 ]
+
+const benefits = [
+  'landing.benefits.items.guidance',
+  'landing.benefits.items.consistency',
+  'landing.benefits.items.video',
+]
+
+const useCases = [
+  'landing.useCases.items.conceptArt',
+  'landing.useCases.items.characterDesign',
+  'landing.useCases.items.storyboards',
+  'landing.useCases.items.lookdev',
+]
+
+const keywordTopics = [
+  'landing.keywordTopics.items.imagePrompts',
+  'landing.keywordTopics.items.videoPrompts',
+  'landing.keywordTopics.items.comfyui',
+  'landing.keywordTopics.items.sceneBuilding',
+  'landing.keywordTopics.items.promptLibrary',
+  'landing.keywordTopics.items.creativeWorkflow',
+]
+
+const faqItems = [
+  'landing.faq.items.what',
+  'landing.faq.items.comfyui',
+  'landing.faq.items.video',
+  'landing.faq.items.save',
+]
+
+const journeyElement = ref<HTMLElement | null>(null)
+const isJourneyHighlighted = ref(false)
+
+let journeyHighlightTimeout: number | null = null
+
+function focusJourney() {
+  journeyElement.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  isJourneyHighlighted.value = true
+
+  if (journeyHighlightTimeout !== null) {
+    window.clearTimeout(journeyHighlightTimeout)
+  }
+
+  journeyHighlightTimeout = window.setTimeout(() => {
+    isJourneyHighlighted.value = false
+    journeyHighlightTimeout = null
+  }, 1800)
+}
+
+onBeforeUnmount(() => {
+  if (journeyHighlightTimeout !== null) {
+    window.clearTimeout(journeyHighlightTimeout)
+  }
+})
 </script>
 
 <template>
@@ -69,19 +123,25 @@ const journey = [
                   <FontAwesomeIcon :icon="['fas', 'wand-magic-sparkles']" class="mr-2" />
                   {{ t('landing.primaryCta') }}
                 </RouterLink>
-                <a
-                  href="#journey"
+                <button
+                  type="button"
                   class="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:border-glow/40"
+                  @click="focusJourney"
                 >
                   {{ t('landing.secondaryCta') }}
-                </a>
+                </button>
               </div>
 
-              <div id="journey" class="grid gap-3 md:grid-cols-3">
+              <div
+                id="journey"
+                ref="journeyElement"
+                class="grid gap-3 transition-all duration-500 md:grid-cols-3"
+              >
                 <div
                   v-for="step in journey"
                   :key="step"
-                  class="rounded-[26px] border border-white/10 bg-white/5 p-4"
+                  class="rounded-[26px] border border-white/10 bg-white/5 p-4 transition-all duration-500"
+                  :class="isJourneyHighlighted ? 'border-glow/45 bg-glow/10 shadow-[0_0_0_1px_rgba(139,211,255,0.16),0_24px_60px_rgba(22,88,128,0.22)]' : ''"
                 >
                   <p class="text-xs uppercase tracking-[0.24em] text-slate-400">{{ t(`${step}.label`) }}</p>
                   <p class="mt-3 text-sm leading-7 text-slate-200">{{ t(`${step}.text`) }}</p>
@@ -125,6 +185,83 @@ const journey = [
                 </div>
               </article>
             </section>
+          </div>
+        </section>
+
+        <section class="grid gap-6 pb-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <section class="glass-panel rounded-[34px] p-6 md:p-7">
+            <p class="text-xs uppercase tracking-[0.28em] text-glow">{{ t('landing.benefits.kicker') }}</p>
+            <h2 class="mt-3 font-display text-3xl text-white md:text-4xl">{{ t('landing.benefits.title') }}</h2>
+            <p class="mt-4 max-w-3xl text-sm leading-7 text-slate-300 md:text-base">
+              {{ t('landing.benefits.intro') }}
+            </p>
+            <div class="mt-6 grid gap-4 md:grid-cols-3">
+              <article
+                v-for="benefit in benefits"
+                :key="benefit"
+                class="rounded-[26px] border border-white/10 bg-white/5 p-5"
+              >
+                <h3 class="text-lg font-semibold text-white">{{ t(`${benefit}.title`) }}</h3>
+                <p class="mt-3 text-sm leading-7 text-slate-300">{{ t(`${benefit}.text`) }}</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="glass-panel rounded-[34px] p-6 md:p-7">
+            <p class="text-xs uppercase tracking-[0.28em] text-glow">{{ t('landing.useCases.kicker') }}</p>
+            <h2 class="mt-3 font-display text-3xl text-white md:text-4xl">{{ t('landing.useCases.title') }}</h2>
+            <p class="mt-4 text-sm leading-7 text-slate-300 md:text-base">{{ t('landing.useCases.intro') }}</p>
+            <div class="mt-6 grid gap-3">
+              <article
+                v-for="useCase in useCases"
+                :key="useCase"
+                class="rounded-[24px] border border-white/10 bg-slate-950/45 p-5"
+              >
+                <h3 class="text-lg font-semibold text-white">{{ t(`${useCase}.title`) }}</h3>
+                <p class="mt-2 text-sm leading-7 text-slate-300">{{ t(`${useCase}.text`) }}</p>
+              </article>
+            </div>
+          </section>
+        </section>
+
+        <section class="glass-panel rounded-[34px] p-6 pb-7 md:p-7 md:pb-8">
+          <div class="max-w-4xl">
+            <p class="text-xs uppercase tracking-[0.28em] text-glow">{{ t('landing.keywordTopics.kicker') }}</p>
+            <h2 class="mt-3 font-display text-3xl text-white md:text-4xl">{{ t('landing.keywordTopics.title') }}</h2>
+            <p class="mt-4 text-sm leading-7 text-slate-300 md:text-base">{{ t('landing.keywordTopics.intro') }}</p>
+          </div>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <span
+              v-for="topic in keywordTopics"
+              :key="topic"
+              class="rounded-full border border-glow/20 bg-glow/10 px-4 py-2 text-sm text-slate-100"
+            >
+              {{ t(topic) }}
+            </span>
+          </div>
+          <p class="mt-5 max-w-5xl text-sm leading-7 text-slate-400">{{ t('landing.keywordTopics.outro') }}</p>
+        </section>
+
+        <section class="glass-panel rounded-[34px] p-6 pb-7 md:p-7 md:pb-8">
+          <div class="max-w-4xl">
+            <p class="text-xs uppercase tracking-[0.28em] text-glow">{{ t('landing.faq.kicker') }}</p>
+            <h2 class="mt-3 font-display text-3xl text-white md:text-4xl">{{ t('landing.faq.title') }}</h2>
+            <p class="mt-4 text-sm leading-7 text-slate-300 md:text-base">{{ t('landing.faq.intro') }}</p>
+          </div>
+          <div class="mt-6 grid gap-3">
+            <details
+              v-for="item in faqItems"
+              :key="item"
+              class="group rounded-[24px] border border-white/10 bg-slate-950/45 p-5 open:border-glow/35 open:bg-glow/5"
+            >
+              <summary class="cursor-pointer list-none text-lg font-semibold text-white marker:hidden">
+                <span class="flex items-center justify-between gap-4">
+                  <span>{{ t(`${item}.question`) }}</span>
+                  <span class="text-glow transition group-open:rotate-45">+</span>
+                </span>
+              </summary>
+              <p class="mt-4 max-w-4xl text-sm leading-7 text-slate-300 md:text-base">{{ t(`${item}.answer`) }}</p>
+            </details>
           </div>
         </section>
       </div>

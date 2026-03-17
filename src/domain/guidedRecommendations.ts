@@ -1,5 +1,5 @@
-import type { PromptProject } from '../types/models'
-import type { GuidedOption, GuidedGroup } from './guidedVocabulary'
+import type { GuidedGroup, PromptProject } from '../types/models'
+import type { GuidedOption } from './guidedVocabulary'
 
 const includesValue = (value: string | undefined, terms: string[]) => {
   const normalized = value?.toLowerCase().trim()

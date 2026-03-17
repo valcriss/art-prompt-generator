@@ -1,5 +1,6 @@
 import type {
   AppLocale,
+  CustomGuidedOption,
   LibraryElement,
   LibraryElementStructuredValues,
   LibraryElementType,
@@ -292,9 +293,10 @@ export const getLibraryDraftStructuredValues = (
 export const getLocalizedLibraryFieldOptions = (
   field: LibraryFieldDefinition,
   locale: AppLocale,
+  customOptions: CustomGuidedOption[] = [],
 ): LocalizedOption[] => {
   if (field.guidedKey) {
-    return getLocalizedGuidedOptions(field.guidedKey, locale)
+    return getLocalizedGuidedOptions(field.guidedKey, locale, undefined, undefined, customOptions)
   }
 
   if (field.options) {
