@@ -2,23 +2,77 @@
 
 [![CI](https://github.com/valcriss/art-prompt-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/valcriss/art-prompt-generator/actions/workflows/ci.yml)
 
-Creative prompt studio built with Vue 3, TypeScript, Vite and Tailwind CSS.
+Art Prompt Generator is a creative studio for building richer image and video prompts.
 
-The product helps artists and AI image-makers turn a rough idea into a richer prompt by guiding them through subject, environment, atmosphere, lighting, composition and storytelling details. Phase 1 is frontend-only and stores everything locally in the browser through repository abstractions designed to be replaceable by API-backed implementations later.
+Instead of starting from a blank text box, the product helps artists, illustrators, designers and AI creators shape a scene through subject, environment, mood, lighting, composition, motion and storytelling detail. The goal is simple: turn a vague idea into a prompt that already feels directed, coherent and visually alive before generation even starts.
 
-## MVP scope
+![Art Prompt Generator interface](public/images/capture.png)
 
-- bilingual UI with `fr` and `en`
-- landing page and dedicated studio workspace
-- guided builder for `image` and `video` prompt projects
-- positive and negative prompt generation
-- smart suggestions, contextual bundles and guided comboboxes
-- local project history with reopen, duplicate and delete
-- reusable creative library with structured fields and selective insertion
-- reusable templates/presets with structured editing and mini builder
-- local persistence through repositories
+Main studio workspace with guided scene building, reusable creative tools and live prompt output.
 
-## Stack
+## Why it exists
+
+This is not a generic prompt textarea.
+
+Art Prompt Generator is designed as a guided composition workflow where a prompt becomes the result of creative decisions made step by step. It is closer to a small art-direction studio than to a parameter form.
+
+The current version is a frontend-first MVP built to validate one core question:
+
+Can a more guided creative workflow help people write better prompts for image and video generation tools?
+
+## What makes it different
+
+- It treats a prompt as a creative project, not just a string of keywords
+- It helps users shape atmosphere, framing, motion and storytelling, not only subject labels
+- It supports both still-image prompting and single-shot video prompting in one workflow
+- It keeps reusable creative ingredients close at hand through templates, history and a personal library
+- It is bilingual from the start, with English and French UI support
+
+## Features
+
+- Build structured prompt projects for both image and video use cases
+- Guide the scene through subject, place, mood, style, lighting, composition and story detail
+- Generate positive and negative prompts from a richer creative structure
+- Save prompt projects locally and reopen, duplicate or refine them later
+- Reuse creative ingredients through a personal library of characters, locations, atmospheres and details
+- Start faster with reusable templates and presets
+- Work in English or French with localized UI from the start
+
+## Who it is for
+
+- AI artists
+- digital illustrators
+- concept artists
+- graphic designers
+- creative hobbyists
+- anyone using tools such as ComfyUI who wants more expressive prompts
+
+## Product direction
+
+The product revolves around the idea of a prompt project rather than a single prompt string.
+
+Each project captures a creative concept with structured scene information, reusable elements and live prompt output. Phase 1 stores everything locally in the browser through repository abstractions so the UX can be validated now without coupling the product to backend infrastructure too early.
+
+## Current highlights
+
+- guided prompt builder for image and single-shot video prompts
+- contextual suggestions and richer guided vocabulary
+- personal vocabulary for custom creative values across comboboxes
+- reusable library and templates
+- local project history with duplication and reopen flows
+- export support and live prompt preview
+- bilingual interface in English and French
+
+![Art Prompt Generator builder detail](public/images/capture2.png)
+
+## Roadmap direction
+
+- deepen the creative workflow for prompt iteration and comparison
+- continue improving mobile polish and responsive behavior
+- introduce backend-backed sync and authentication in a later phase
+- add richer reference-image and sharing capabilities when the core UX is validated
+
+## Tech stack
 
 - Vue 3
 - TypeScript
@@ -30,9 +84,9 @@ The product helps artists and AI image-makers turn a rough idea into a richer pr
 - Vue Test Utils
 - ESLint
 
-## Run locally
+## Getting started
 
-From the project root:
+### Run locally
 
 ```bash
 npm install
@@ -41,24 +95,23 @@ npm run dev
 
 Open the URL shown by Vite, usually `http://localhost:5173`.
 
-Routes:
+### Main routes
 
 - `/` landing page
-- `/studio` main builder
-- `/studio/library` advanced library management
-- `/studio/templates` advanced template management
-- `/studio/history` local project history
+- `/studio` prompt builder
+- `/studio/library` reusable library management
+- `/studio/templates` template management
+- `/studio/history` saved projects
 
-## Available scripts
+### Quality checks
 
 ```bash
-npm run dev
-npm run build
-npm run preview
-npm run test
 npm run lint
-npm run format
+npm run test
+npm run build
 ```
+
+The repository includes a GitHub Actions CI workflow that runs these checks automatically on each push and pull request, plus a Pages deployment workflow triggered by tags.
 
 ## Project structure
 
@@ -76,42 +129,29 @@ src/
 
 ## Architecture notes
 
-- Phase 1 uses local persistence only.
-- UI components do not talk to `localStorage` directly.
-- Persistence lives behind repository contracts such as:
-  - `PromptProjectRepository`
-  - `PromptTemplateRepository`
-  - `LibraryElementRepository`
-  - `UserPreferenceRepository`
-- This keeps the codebase ready for a later Phase 2 with backend APIs and sync.
+- Phase 1 is frontend-only and persists data locally
+- UI components do not access `localStorage` directly
+- persistence lives behind repository contracts
+- the structure is intentionally ready for a later API-backed phase
 
-## Testing and quality
+Core repository abstractions include:
 
-The project includes:
+- `PromptProjectRepository`
+- `PromptTemplateRepository`
+- `LibraryElementRepository`
+- `UserPreferenceRepository`
 
-- unit tests for domain logic and repositories
-- component tests for key studio flows
-- ESLint
-- TypeScript build validation via `vue-tsc`
+## Contributing
 
-Recommended validation before sharing work:
+Issues, ideas and improvements are welcome.
 
-```bash
-npm run test
-npm run lint
-npm run build
-```
+If you want to contribute:
 
-## Product notes
+- open an issue for bugs, UX gaps or feature ideas
+- create a branch from `main`
+- run `npm run lint`, `npm run test` and `npm run build` before opening a pull request
+- keep changes focused and consistent with the current product direction
 
-- Prompt projects are the core entity of the app.
-- The builder adapts between still-image prompting and single-shot video prompting.
-- Guided values are localized for the user, while prompt tokens remain canonically stored in English when needed for generation consistency.
-- Quick filters in the studio and locale preference are persisted locally.
+## Project status
 
-## Next likely steps after MVP
-
-- deeper mobile QA and device-specific polish
-- additional UI tests for richer comparison flows
-- backend-backed repositories for sync and authentication
-- reference image uploads and shared projects
+This repository is actively evolving as a frontend-first MVP. The current focus is product quality, creative workflow clarity and strong foundations for a later backend-backed phase.

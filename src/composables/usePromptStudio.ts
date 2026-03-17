@@ -15,6 +15,7 @@ import {
   libraryElementSchemas,
 } from '../domain/libraryElementSchema'
 import { createEmptyPromptProject, clonePromptProject } from '../domain/promptFactory'
+import { pickProjectTitleIdea } from '../domain/projectTitleIdeas'
 import { createEnrichmentSuggestions } from '../domain/promptSuggestions'
 import {
   customGuidedOptionUsesMediumScope,
@@ -757,13 +758,28 @@ const createStudioStore = () => {
 }
 
 export const usePromptStudio = () => {
-  const { t, locale: i18nLocale } = useI18n()
+  const { t, tm, locale: i18nLocale } = useI18n()
 
   if (!studioSingleton) {
     studioSingleton = createStudioStore()
   }
 
   const store = studioSingleton
+  const titleIdeas = computed(() => {
+    const localizedIdeas = tm('builder.placeholders.titleIdeas')
+
+    return Array.isArray(localizedIdeas)
+      ? localizedIdeas.map((idea) => String(idea))
+      : []
+  })
+  const fallbackProjectTitle = computed(() =>
+    pickProjectTitleIdea(
+      store.currentProject.value.id,
+      titleIdeas.value,
+      t('builder.placeholders.title'),
+    ),
+  )
+
   void store.ensureLoaded().then(() => {
     i18nLocale.value = store.locale.value
   })
@@ -907,7 +923,7 @@ export const usePromptStudio = () => {
     const saved = await projectRepository.save(
       buildProjectWithGeneratedPrompts({
         ...store.currentProject.value,
-        title: store.currentProject.value.title || t('builder.placeholders.title'),
+        title: store.currentProject.value.title || fallbackProjectTitle.value,
       }),
     )
     store.currentProject.value = saved
@@ -920,7 +936,8 @@ export const usePromptStudio = () => {
       cloneProjectState(project),
     )
     store.lastCreativeAction.value = t('preview.activityProjectLoaded', {
-      name: project.title || t('builder.placeholders.title'),
+      name:
+        project.title || pickProjectTitleIdea(project.id, titleIdeas.value, t('builder.placeholders.title')),
     })
   }
 
@@ -1416,6 +1433,7 @@ export const usePromptStudio = () => {
   return {
     ...store,
     locale: store.locale,
+    fallbackProjectTitle,
     setLocale,
     newProject,
     saveProject,

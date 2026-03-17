@@ -764,7 +764,7 @@ const openTemplateWorkshop = async () => {
           <div class="max-w-2xl space-y-2">
             <p class="text-xs uppercase tracking-[0.28em] text-glow">{{ t('studio.builderKicker') }}</p>
             <h2 class="max-w-[14ch] font-display text-3xl leading-[1.02] text-white md:text-4xl">
-              {{ studio.currentProject.title || t('builder.placeholders.title') }}
+              {{ studio.currentProject.title || studio.fallbackProjectTitle }}
             </h2>
             <p class="max-w-2xl text-sm leading-7 text-slate-300 md:text-base md:leading-7">
               {{ studio.currentProject.description || t('studio.builderSubtitle') }}
@@ -859,7 +859,7 @@ const openTemplateWorkshop = async () => {
             <p class="text-sm leading-7 text-slate-400">{{ t('studio.workspace.projectMetaSubtitle') }}</p>
             <div class="grid gap-4 md:grid-cols-2">
               <FieldBlock :label="t('builder.fields.title')">
-                <input v-model="studio.currentProject.title" :placeholder="t('builder.placeholders.title')" class="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white placeholder:text-slate-500 outline-none transition focus:border-glow/40 focus:bg-slate-950/80" />
+                <input v-model="studio.currentProject.title" :placeholder="studio.fallbackProjectTitle" class="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white placeholder:text-slate-500 outline-none transition focus:border-glow/40 focus:bg-slate-950/80" />
               </FieldBlock>
               <FieldBlock :label="t('builder.fields.tags')">
                 <input :value="studio.currentProject.tags.join(', ')" :placeholder="t('builder.placeholders.tags')" class="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white placeholder:text-slate-500 outline-none transition focus:border-glow/40 focus:bg-slate-950/80" @input="studio.updateTags(($event.target as HTMLInputElement).value)" />
