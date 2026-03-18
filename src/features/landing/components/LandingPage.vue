@@ -90,12 +90,33 @@ onBeforeUnmount(() => {
                 <LocaleFlagButton code="en" label="EN" :active="studio.locale === 'en'" @click="studio.setLocale('en')" />
                 <LocaleFlagButton code="fr" label="FR" :active="studio.locale === 'fr'" @click="studio.setLocale('fr')" />
               </div>
-              <RouterLink
-                to="/studio"
-                class="inline-flex items-center justify-center rounded-full border border-white/15 bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:-translate-y-0.5"
-              >
-                {{ t('landing.enterStudio') }}
-              </RouterLink>
+              <div class="flex items-center gap-3">
+                <RouterLink
+                  to="/studio"
+                  class="inline-flex h-12 items-center justify-center rounded-full border border-white/15 bg-white px-4 text-sm font-semibold text-slate-950 transition hover:-translate-y-0.5"
+                >
+                  {{ t('landing.enterStudio') }}
+                </RouterLink>
+                <a
+                  href="https://github.com/valcriss/art-prompt-generator"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="inline-flex h-12 items-center justify-center rounded-full border border-white/15 bg-white/5 px-4 text-white transition hover:-translate-y-0.5 hover:bg-white/10"
+                  :aria-label="t('app.githubRepository')"
+                >
+                  <svg
+                    viewBox="0 0 98 96"
+                    class="h-6 w-auto"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M49 0C21.9 0 0 22.4 0 50c0 22.1 14.3 40.9 34.1 47.5 2.5.5 3.4-1.1 3.4-2.4 0-1.2-.1-5.3-.1-9.6-13.9 3.1-16.8-6-16.8-6-2.3-5.9-5.6-7.4-5.6-7.4-4.6-3.2.3-3.1.3-3.1 5.1.4 7.8 5.3 7.8 5.3 4.5 7.8 11.9 5.6 14.8 4.3.5-3.3 1.8-5.6 3.2-6.9-11.1-1.3-22.8-5.7-22.8-25.2 0-5.6 2-10.2 5.2-13.8-.5-1.3-2.2-6.5.5-13.5 0 0 4.2-1.4 13.9 5.3 4-1.1 8.3-1.7 12.6-1.7s8.6.6 12.6 1.7c9.6-6.7 13.9-5.3 13.9-5.3 2.7 7 1 12.2.5 13.5 3.2 3.6 5.2 8.2 5.2 13.8 0 19.6-11.7 23.9-22.9 25.2 1.8 1.6 3.4 4.6 3.4 9.4 0 6.8-.1 12.2-.1 13.9 0 1.3.9 2.9 3.4 2.4C83.7 90.9 98 72.1 98 50 98 22.4 76.1 0 49 0Z"
+                    />
+                  </svg>
+                </a>
+              </div>
             </div>
           </div>
         </header>
