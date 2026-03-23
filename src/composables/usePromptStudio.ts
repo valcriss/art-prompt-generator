@@ -1162,6 +1162,28 @@ export const usePromptStudio = () => {
     }
   }
 
+  const linkLibraryElementToProject = (
+    project: PromptProject,
+    elementId: string,
+  ) => {
+    project.libraryElements = project.libraryElements?.includes(elementId)
+      ? [...(project.libraryElements ?? [])]
+      : [...(project.libraryElements ?? []), elementId]
+  }
+
+  const applyLinkedLibraryElement = (
+    element: LibraryElement,
+    apply: (project: PromptProject, target: LibraryElement) => PromptProject,
+  ) => {
+    const nextProject = cloneProjectState(store.currentProject.value)
+    const updatedProject = apply(nextProject, element)
+    linkLibraryElementToProject(updatedProject, element.id)
+    store.currentProject.value = updatedProject
+    store.lastCreativeAction.value = t('preview.activityLibraryApplied', {
+      name: element.name,
+    })
+  }
+
   const applyLibraryCharacterAsSubject = (elementId: string) => {
     const element = store.libraryElements.value.find(
       (entry) => entry.id === elementId && entry.type === 'character',
@@ -1178,9 +1200,7 @@ export const usePromptStudio = () => {
       appearance: subjectValues.appearance,
     }
 
-    nextProject.libraryElements = nextProject.libraryElements?.includes(element.id)
-      ? [...(nextProject.libraryElements ?? [])]
-      : [...(nextProject.libraryElements ?? []), element.id]
+    linkLibraryElementToProject(nextProject, element.id)
 
     store.currentProject.value = nextProject
     store.lastCreativeAction.value = t('preview.activityLibraryApplied', {
@@ -1199,9 +1219,7 @@ export const usePromptStudio = () => {
       ...(nextProject.sceneCharacters ?? []),
       createSceneCharacterFromLibraryElement(element),
     ]
-    nextProject.libraryElements = nextProject.libraryElements?.includes(element.id)
-      ? [...(nextProject.libraryElements ?? [])]
-      : [...(nextProject.libraryElements ?? []), element.id]
+    linkLibraryElementToProject(nextProject, element.id)
 
     store.currentProject.value = nextProject
     store.lastCreativeAction.value = t('preview.activityLibraryApplied', {
@@ -1230,13 +1248,107 @@ export const usePromptStudio = () => {
     target.description = nextCharacter.description
     target.appearance = nextCharacter.appearance
 
-    nextProject.libraryElements = nextProject.libraryElements?.includes(element.id)
-      ? [...(nextProject.libraryElements ?? [])]
-      : [...(nextProject.libraryElements ?? []), element.id]
+    linkLibraryElementToProject(nextProject, element.id)
 
     store.currentProject.value = nextProject
     store.lastCreativeAction.value = t('preview.activityLibraryApplied', {
       name: element.name,
+    })
+  }
+
+  const applyLibraryLocationToProject = (elementId: string) => {
+    const element = store.libraryElements.value.find(
+      (entry) => entry.id === elementId && entry.type === 'location',
+    )
+    if (!element) return
+
+    applyLinkedLibraryElement(element, (project, target) => {
+      const structured = target.structuredValues ?? {}
+
+      project.environment.location =
+        structured.placeType?.trim() || target.name.trim() || project.environment.location || ''
+      project.environment.description = [
+        target.description.trim(),
+        structured.architecture?.trim(),
+        structured.palette?.trim(),
+      ]
+        .filter(Boolean)
+        .join(', ')
+      project.environment.era = structured.era?.trim() || ''
+      project.environment.weather = structured.weather?.trim() || ''
+      project.environment.timeOfDay = structured.timeOfDay?.trim() || ''
+      if (structured.lighting?.trim()) {
+        project.lighting = structured.lighting.trim()
+      }
+
+      return project
+    })
+  }
+
+  const applyLibrarySceneToProject = (elementId: string) => {
+    const element = store.libraryElements.value.find(
+      (entry) => entry.id === elementId && entry.type === 'scene',
+    )
+    if (!element) return
+
+    applyLinkedLibraryElement(element, (project, target) => {
+      const structured = target.structuredValues ?? {}
+
+      if (structured.setting?.trim()) {
+        project.environment.location = structured.setting.trim()
+      }
+      if (target.description.trim()) {
+        project.environment.description = target.description.trim()
+      }
+      if (structured.action?.trim()) {
+        project.subject.action = structured.action.trim()
+      }
+      if (structured.mood?.trim()) {
+        project.mood = structured.mood.trim()
+      }
+      if (structured.storyCue?.trim() && !project.details.includes(structured.storyCue.trim())) {
+        project.details = [...project.details, structured.storyCue.trim()]
+      }
+
+      return project
+    })
+  }
+
+  const applyLibraryCompositionToProject = (elementId: string) => {
+    const element = store.libraryElements.value.find(
+      (entry) => entry.id === elementId && entry.type === 'composition',
+    )
+    if (!element) return
+
+    applyLinkedLibraryElement(element, (project, target) => {
+      const structured = target.structuredValues ?? {}
+
+      project.style = structured.style?.trim() || ''
+      project.lighting = structured.lighting?.trim() || ''
+      project.composition = structured.composition?.trim() || ''
+      project.camera = {
+        ...project.camera,
+        captureDevice: structured.captureDevice?.trim() || '',
+      }
+
+      return project
+    })
+  }
+
+  const addLibraryDetailToProject = (elementId: string) => {
+    const element = store.libraryElements.value.find(
+      (entry) => entry.id === elementId && entry.type === 'detail',
+    )
+    if (!element) return
+
+    applyLinkedLibraryElement(element, (project, target) => {
+      const detailText = describeLibraryElement(target) || target.description.trim() || target.name
+
+      if (detailText && !project.details.includes(detailText)) {
+        project.details = [...project.details, detailText]
+      }
+
+      return project
     })
   }
 
@@ -1455,6 +1567,10 @@ export const usePromptStudio = () => {
     applyLibraryCharacterAsSubject,
     addLibraryCharacterToScene,
     applyLibraryCharacterToSceneCharacter,
+    applyLibraryLocationToProject,
+    applyLibrarySceneToProject,
+    applyLibraryCompositionToProject,
+    addLibraryDetailToProject,
     cancelLibraryInsert,
     toggleLibraryInsertMapping,
     confirmLibraryInsert,

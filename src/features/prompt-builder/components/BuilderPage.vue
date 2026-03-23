@@ -17,6 +17,7 @@ import { suggestCustomGuidedGroup } from '../../../domain/guidedVocabulary'
 import type {
   AppLocale,
   GuidedVocabularyKey,
+  LibraryElementType,
   PromptMedium,
   SceneCharacter,
   SceneCharacterRole,
@@ -30,6 +31,13 @@ type WorkspaceStageId =
   | 'composition'
   | 'details'
 type WorkspaceToolTab = 'inspire' | 'reuse' | 'project'
+type LibraryDialogMode =
+  | 'subject'
+  | 'secondary'
+  | 'location'
+  | 'scene'
+  | 'composition'
+  | 'detail'
 interface StudioSelectOption {
   value: string
   label: string
@@ -70,7 +78,7 @@ const router = useRouter()
 const activeStage = ref<WorkspaceStageId>('project')
 const activeToolTab = ref<WorkspaceToolTab>('inspire')
 const subjectLibraryDialogOpen = ref(false)
-const subjectLibraryDialogMode = ref<'subject' | 'secondary'>('subject')
+const subjectLibraryDialogMode = ref<LibraryDialogMode>('subject')
 const subjectLibraryDialogCharacterId = ref<string | null>(null)
 
 const stageOrder: WorkspaceStageId[] = [
@@ -332,12 +340,27 @@ const getFeaturedOptions = (
   return (curated.length ? curated : options).slice(0, limit)
 }
 
-const subjectLibraryCharacters = computed(() => {
+const libraryDialogType = computed<LibraryElementType>(() => {
+  switch (subjectLibraryDialogMode.value) {
+    case 'location':
+      return 'location'
+    case 'scene':
+      return 'scene'
+    case 'composition':
+      return 'composition'
+    case 'detail':
+      return 'detail'
+    default:
+      return 'character'
+  }
+})
+
+const libraryDialogElements = computed(() => {
   const query = studio.subjectLibrarySearch.trim().toLowerCase()
 
   return studio.libraryElements
     .filter((element) => {
-      if (element.type !== 'character') return false
+      if (element.type !== libraryDialogType.value) return false
       if (!query) return true
 
       return [element.name, element.description, ...element.tags].some((value) =>
@@ -345,7 +368,7 @@ const subjectLibraryCharacters = computed(() => {
       )
     })
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
-    .slice(0, 4)
+    .slice(0, 6)
 })
 
 const openSubjectLibraryDialog = () => {
@@ -360,21 +383,93 @@ const openSecondaryCharacterLibraryDialog = (characterId: string) => {
   subjectLibraryDialogOpen.value = true
 }
 
+const openLocationLibraryDialog = () => {
+  subjectLibraryDialogMode.value = 'location'
+  subjectLibraryDialogCharacterId.value = null
+  subjectLibraryDialogOpen.value = true
+}
+
+const openSceneLibraryDialog = () => {
+  subjectLibraryDialogMode.value = 'scene'
+  subjectLibraryDialogCharacterId.value = null
+  subjectLibraryDialogOpen.value = true
+}
+
+const openCompositionLibraryDialog = () => {
+  subjectLibraryDialogMode.value = 'composition'
+  subjectLibraryDialogCharacterId.value = null
+  subjectLibraryDialogOpen.value = true
+}
+
+const openDetailLibraryDialog = () => {
+  subjectLibraryDialogMode.value = 'detail'
+  subjectLibraryDialogCharacterId.value = null
+  subjectLibraryDialogOpen.value = true
+}
+
 const closeSubjectLibraryDialog = () => {
   subjectLibraryDialogOpen.value = false
   subjectLibraryDialogCharacterId.value = null
 }
 
+const libraryDialogTitle = computed(() => {
+  switch (subjectLibraryDialogMode.value) {
+    case 'secondary':
+      return t('builder.libraryDialog.secondaryTitle')
+    case 'location':
+      return t('builder.libraryDialog.locationTitle')
+    case 'scene':
+      return t('builder.libraryDialog.sceneTitle')
+    case 'composition':
+      return t('builder.libraryDialog.compositionTitle')
+    case 'detail':
+      return t('builder.libraryDialog.detailTitle')
+    default:
+      return t('builder.libraryDialog.subjectTitle')
+  }
+})
+
+const libraryDialogSubtitle = computed(() => {
+  switch (subjectLibraryDialogMode.value) {
+    case 'secondary':
+      return t('builder.libraryDialog.secondarySubtitle')
+    case 'location':
+      return t('builder.libraryDialog.locationSubtitle')
+    case 'scene':
+      return t('builder.libraryDialog.sceneSubtitle')
+    case 'composition':
+      return t('builder.libraryDialog.compositionSubtitle')
+    case 'detail':
+      return t('builder.libraryDialog.detailSubtitle')
+    default:
+      return t('builder.libraryDialog.subjectSubtitle')
+  }
+})
+
 const applySubjectLibraryCharacter = (elementId: string) => {
-  if (subjectLibraryDialogMode.value === 'secondary') {
-    if (subjectLibraryDialogCharacterId.value) {
-      studio.applyLibraryCharacterToSceneCharacter(
-        subjectLibraryDialogCharacterId.value,
-        elementId,
-      )
-    }
-  } else {
-    studio.applyLibraryCharacterAsSubject(elementId)
+  switch (subjectLibraryDialogMode.value) {
+    case 'secondary':
+      if (subjectLibraryDialogCharacterId.value) {
+        studio.applyLibraryCharacterToSceneCharacter(
+          subjectLibraryDialogCharacterId.value,
+          elementId,
+        )
+      }
+      break
+    case 'location':
+      studio.applyLibraryLocationToProject(elementId)
+      break
+    case 'scene':
+      studio.applyLibrarySceneToProject(elementId)
+      break
+    case 'composition':
+      studio.applyLibraryCompositionToProject(elementId)
+      break
+    case 'detail':
+      studio.addLibraryDetailToProject(elementId)
+      break
+    default:
+      studio.applyLibraryCharacterAsSubject(elementId)
   }
   closeSubjectLibraryDialog()
 }
@@ -899,92 +994,6 @@ const openTemplateWorkshop = async () => {
             </div>
           </section>
 
-          <div
-            v-if="subjectLibraryDialogOpen"
-            data-testid="subject-library-dialog"
-            class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur-sm"
-            @click.self="closeSubjectLibraryDialog"
-          >
-            <div class="w-full max-w-3xl rounded-[30px] border border-white/10 bg-[#0b1020]/95 p-5 shadow-haze md:p-6">
-              <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <p class="text-xs uppercase tracking-[0.28em] text-glow">{{ t('builder.characters.libraryTitle') }}</p>
-                  <h4 class="mt-2 text-xl font-semibold text-white">
-                    {{
-                      subjectLibraryDialogMode === 'subject'
-                        ? t('builder.characters.dialogTitle')
-                        : t('builder.characters.secondaryDialogTitle')
-                    }}
-                  </h4>
-                  <p class="mt-2 text-sm leading-7 text-slate-400">
-                    {{
-                      subjectLibraryDialogMode === 'subject'
-                        ? t('builder.characters.dialogSubtitle')
-                        : t('builder.characters.secondaryDialogSubtitle')
-                    }}
-                  </p>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <RouterLink
-                    to="/studio/library"
-                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
-                    @click="closeSubjectLibraryDialog"
-                  >
-                    <FontAwesomeIcon :icon="['fas', 'layer-group']" class="mr-2 text-glow" />
-                    {{ t('builder.characters.manageLibrary') }}
-                  </RouterLink>
-                  <button
-                    type="button"
-                    class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
-                    @click="closeSubjectLibraryDialog"
-                  >
-                    <FontAwesomeIcon :icon="['fas', 'xmark']" class="mr-2" />
-                    {{ t('builder.characters.closeLibraryDialog') }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="relative mt-5">
-                <FontAwesomeIcon :icon="['fas', 'magnifying-glass']" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input
-                  v-model="studio.subjectLibrarySearch"
-                  :placeholder="t('builder.characters.librarySearch')"
-                  class="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-glow/40"
-                />
-              </div>
-
-              <div v-if="subjectLibraryCharacters.length" class="mt-5 grid gap-3 md:grid-cols-2">
-                <button
-                  v-for="element in subjectLibraryCharacters"
-                  :key="`subject-library-${element.id}`"
-                  type="button"
-                  data-testid="subject-library-card"
-                  class="rounded-[24px] border border-white/10 bg-slate-950/40 p-4 text-left transition hover:border-glow/25 hover:bg-white/[0.06]"
-                  @click="applySubjectLibraryCharacter(element.id)"
-                >
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <p class="font-medium text-white">{{ element.name }}</p>
-                      <p class="mt-2 text-sm leading-6 text-slate-300">{{ studio.renderLibraryElementDescription(element) }}</p>
-                    </div>
-                    <span class="rounded-full border border-glow/20 bg-glow/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-glow">
-                      {{ t('library.character') }}
-                    </span>
-                  </div>
-                  <div class="mt-3 flex flex-wrap gap-2">
-                    <ChipTag v-for="tag in element.tags.slice(0, 2)" :key="`${element.id}-${tag}`" :label="tag" />
-                  </div>
-                </button>
-              </div>
-              <p
-                v-else
-                class="mt-5 rounded-[22px] border border-dashed border-white/10 bg-white/[0.04] px-4 py-4 text-sm leading-6 text-slate-400"
-              >
-                {{ t('builder.characters.libraryEmpty') }}
-              </p>
-            </div>
-          </div>
-
           <section class="space-y-4 rounded-[26px] border border-white/8 bg-white/[0.03] p-4 md:p-5">
             <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div>
@@ -1161,8 +1170,21 @@ const openTemplateWorkshop = async () => {
 
         <div v-else-if="activeStage === 'world'" class="space-y-6">
           <section class="space-y-3 rounded-[26px] border border-white/8 bg-white/[0.03] p-4 md:p-5">
-            <h3 class="text-lg font-semibold text-white">{{ t('builder.sections.environment') }}</h3>
-            <p class="text-sm leading-7 text-slate-400">{{ t('studio.workspace.worldSubtitle') }}</p>
+            <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-white">{{ t('builder.sections.environment') }}</h3>
+                <p class="text-sm leading-7 text-slate-400">{{ t('studio.workspace.worldSubtitle') }}</p>
+              </div>
+              <button
+                type="button"
+                data-testid="location-library-open"
+                class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+                @click="openLocationLibraryDialog"
+              >
+                <FontAwesomeIcon :icon="['fas', 'layer-group']" class="mr-2 text-glow" />
+                {{ t('builder.libraryDialog.loadFromLibrary') }}
+              </button>
+            </div>
             <div class="grid gap-4 md:grid-cols-2">
               <FieldBlock :label="t('builder.fields.location')"><input v-model="studio.currentProject.environment.location" class="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none transition focus:border-glow/40" /></FieldBlock>
               <div class="md:col-span-2">
@@ -1189,21 +1211,60 @@ const openTemplateWorkshop = async () => {
           </section>
         </div>
 
-        <div v-else-if="activeStage === 'scene'" class="grid gap-4 xl:grid-cols-2">
-          <CreativeChoiceField :label="t('builder.fields.mood')" :helper="t('studio.choiceCards.mood')" :placeholder="t('builder.fields.mood')" :icon="['fas', 'wand-magic-sparkles']" :model-value="studio.currentProject.mood" :options="moodOptions" :featured-options="getFeaturedOptions(moodOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.mood')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('mood', value)" @update:model-value="studio.currentProject.mood = $event" @save-custom="saveProjectCustomGuidedValue('mood', 'mood', $event)" />
+        <div v-else-if="activeStage === 'scene'" class="space-y-4">
+          <div class="flex justify-end">
+            <button
+              type="button"
+              data-testid="scene-library-open"
+              class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+              @click="openSceneLibraryDialog"
+            >
+              <FontAwesomeIcon :icon="['fas', 'layer-group']" class="mr-2 text-glow" />
+              {{ t('builder.libraryDialog.loadFromLibrary') }}
+            </button>
+          </div>
+          <div class="grid gap-4 xl:grid-cols-2">
+            <CreativeChoiceField :label="t('builder.fields.mood')" :helper="t('studio.choiceCards.mood')" :placeholder="t('builder.fields.mood')" :icon="['fas', 'wand-magic-sparkles']" :model-value="studio.currentProject.mood" :options="moodOptions" :featured-options="getFeaturedOptions(moodOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.mood')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('mood', value)" @update:model-value="studio.currentProject.mood = $event" @save-custom="saveProjectCustomGuidedValue('mood', 'mood', $event)" />
+          </div>
         </div>
 
-        <div v-else-if="activeStage === 'composition'" class="grid gap-4 xl:grid-cols-2">
-          <CreativeChoiceField :label="t('builder.fields.style')" :helper="t('studio.choiceCards.style')" :placeholder="t('builder.fields.style')" :icon="['fas', 'sliders']" :model-value="studio.currentProject.style" :options="styleOptions" :featured-options="getFeaturedOptions(styleOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.style')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('style', value)" @update:model-value="studio.currentProject.style = $event" @save-custom="saveProjectCustomGuidedValue('style', 'style', $event)" />
-          <CreativeChoiceField :label="t('builder.fields.lighting')" :helper="t('studio.choiceCards.lighting')" :placeholder="t('builder.fields.lighting')" :icon="['fas', 'image']" :model-value="studio.currentProject.lighting" :options="lightingOptions" :featured-options="getFeaturedOptions(lightingOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.lighting')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('lighting', value)" @update:model-value="studio.currentProject.lighting = $event" @save-custom="saveProjectCustomGuidedValue('lighting', 'lighting', $event)" />
-          <CreativeChoiceField :label="t('builder.fields.composition')" :helper="t('studio.choiceCards.composition')" :placeholder="t('builder.fields.composition')" :icon="['fas', 'object-group']" :model-value="studio.currentProject.composition" :options="compositionOptions" :featured-options="getFeaturedOptions(compositionOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.composition')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('composition', value)" @update:model-value="studio.currentProject.composition = $event" @save-custom="saveProjectCustomGuidedValue('composition', 'composition', $event)" />
-          <CreativeChoiceField :label="t('builder.fields.captureDevice')" :helper="t('studio.choiceCards.captureDevice')" :placeholder="t('builder.fields.captureDevice')" :icon="['fas', 'camera']" :model-value="studio.currentProject.camera?.captureDevice" :options="captureDeviceOptions" :featured-options="getFeaturedOptions(captureDeviceOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.captureDevice')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('captureDevice', value)" @update:model-value="studio.currentProject.camera!.captureDevice = $event" @save-custom="saveProjectCustomGuidedValue('captureDevice', 'camera.captureDevice', $event)" />
+        <div v-else-if="activeStage === 'composition'" class="space-y-4">
+          <div class="flex justify-end">
+            <button
+              type="button"
+              data-testid="composition-library-open"
+              class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+              @click="openCompositionLibraryDialog"
+            >
+              <FontAwesomeIcon :icon="['fas', 'layer-group']" class="mr-2 text-glow" />
+              {{ t('builder.libraryDialog.loadFromLibrary') }}
+            </button>
+          </div>
+          <div class="grid gap-4 xl:grid-cols-2">
+            <CreativeChoiceField :label="t('builder.fields.style')" :helper="t('studio.choiceCards.style')" :placeholder="t('builder.fields.style')" :icon="['fas', 'sliders']" :model-value="studio.currentProject.style" :options="styleOptions" :featured-options="getFeaturedOptions(styleOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.style')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('style', value)" @update:model-value="studio.currentProject.style = $event" @save-custom="saveProjectCustomGuidedValue('style', 'style', $event)" />
+            <CreativeChoiceField :label="t('builder.fields.lighting')" :helper="t('studio.choiceCards.lighting')" :placeholder="t('builder.fields.lighting')" :icon="['fas', 'image']" :model-value="studio.currentProject.lighting" :options="lightingOptions" :featured-options="getFeaturedOptions(lightingOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.lighting')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('lighting', value)" @update:model-value="studio.currentProject.lighting = $event" @save-custom="saveProjectCustomGuidedValue('lighting', 'lighting', $event)" />
+            <CreativeChoiceField :label="t('builder.fields.composition')" :helper="t('studio.choiceCards.composition')" :placeholder="t('builder.fields.composition')" :icon="['fas', 'object-group']" :model-value="studio.currentProject.composition" :options="compositionOptions" :featured-options="getFeaturedOptions(compositionOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.composition')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('composition', value)" @update:model-value="studio.currentProject.composition = $event" @save-custom="saveProjectCustomGuidedValue('composition', 'composition', $event)" />
+            <CreativeChoiceField :label="t('builder.fields.captureDevice')" :helper="t('studio.choiceCards.captureDevice')" :placeholder="t('builder.fields.captureDevice')" :icon="['fas', 'camera']" :model-value="studio.currentProject.camera?.captureDevice" :options="captureDeviceOptions" :featured-options="getFeaturedOptions(captureDeviceOptions)" :suggestion-label="t('builder.guided.suggested')" :custom-label="t('builder.guided.custom')" :no-results-label="t('builder.guided.noResults')" :canonical-label="t('builder.guided.canonical')" :group-labels="groupLabels" :locale="optionLocale" allow-create :add-action-label="t('builder.guided.addAction')" :add-prompt-label="t('builder.guided.promptLabel')" :add-prompt-placeholder="t('builder.guided.promptPlaceholder')" :add-helper-text="addCustomHelperText" :personal-label="t('builder.guided.personalOption')" :default-label="t('builder.guided.defaultOption')" show-personal-filter :all-options-label="t('builder.guided.allOptions')" :personal-only-label="t('builder.guided.personalOnly')" :suggested-group-label="t('builder.guided.suggestedGroup')" :target-field-label="t('builder.fields.captureDevice')" :target-field-value-label="t('builder.guided.targetField')" :resolve-suggested-group="({ value }) => resolveSuggestedGroupLabel('captureDevice', value)" @update:model-value="studio.currentProject.camera!.captureDevice = $event" @save-custom="saveProjectCustomGuidedValue('captureDevice', 'camera.captureDevice', $event)" />
+          </div>
         </div>
 
         <div v-else-if="activeStage === 'details'" class="space-y-6">
           <section class="space-y-3 rounded-[26px] border border-white/8 bg-white/[0.03] p-4 md:p-5">
-            <h3 class="text-lg font-semibold text-white">{{ t('builder.sections.details') }}</h3>
-            <p class="text-sm leading-7 text-slate-400">{{ t('studio.workspace.detailsSubtitle') }}</p>
+            <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-white">{{ t('builder.sections.details') }}</h3>
+                <p class="text-sm leading-7 text-slate-400">{{ t('studio.workspace.detailsSubtitle') }}</p>
+              </div>
+              <button
+                type="button"
+                data-testid="details-library-open"
+                class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+                @click="openDetailLibraryDialog"
+              >
+                <FontAwesomeIcon :icon="['fas', 'layer-group']" class="mr-2 text-glow" />
+                {{ t('builder.libraryDialog.addFromLibrary') }}
+              </button>
+            </div>
             <div class="flex gap-3">
               <input v-model="studio.detailDraft" :placeholder="t('builder.placeholders.detail')" class="flex-1 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 outline-none transition focus:border-glow/40" @keyup.enter="studio.addDetail" />
               <button class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm transition hover:bg-white/10" @click="studio.addDetail">+</button>
@@ -1229,6 +1290,80 @@ const openTemplateWorkshop = async () => {
           </section>
         </div>
       </BasePanel>
+
+      <div
+        v-if="subjectLibraryDialogOpen"
+        data-testid="subject-library-dialog"
+        class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur-sm"
+        @click.self="closeSubjectLibraryDialog"
+      >
+        <div class="w-full max-w-3xl rounded-[30px] border border-white/10 bg-[#0b1020]/95 p-5 shadow-haze md:p-6">
+          <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-[0.28em] text-glow">{{ t('builder.characters.libraryTitle') }}</p>
+              <h4 class="mt-2 text-xl font-semibold text-white">{{ libraryDialogTitle }}</h4>
+              <p class="mt-2 text-sm leading-7 text-slate-400">{{ libraryDialogSubtitle }}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <RouterLink
+                to="/studio/library"
+                class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+                @click="closeSubjectLibraryDialog"
+              >
+                <FontAwesomeIcon :icon="['fas', 'layer-group']" class="mr-2 text-glow" />
+                {{ t('builder.characters.manageLibrary') }}
+              </RouterLink>
+              <button
+                type="button"
+                class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
+                @click="closeSubjectLibraryDialog"
+              >
+                <FontAwesomeIcon :icon="['fas', 'xmark']" class="mr-2" />
+                {{ t('builder.characters.closeLibraryDialog') }}
+              </button>
+            </div>
+          </div>
+
+          <div class="relative mt-5">
+            <FontAwesomeIcon :icon="['fas', 'magnifying-glass']" class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              v-model="studio.subjectLibrarySearch"
+              :placeholder="t('builder.characters.librarySearch')"
+              class="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-3 pl-11 pr-4 text-white placeholder:text-slate-500 outline-none transition focus:border-glow/40"
+            />
+          </div>
+
+          <div v-if="libraryDialogElements.length" class="mt-5 grid gap-3 md:grid-cols-2">
+            <button
+              v-for="element in libraryDialogElements"
+              :key="`subject-library-${element.id}`"
+              type="button"
+              data-testid="subject-library-card"
+              class="rounded-[24px] border border-white/10 bg-slate-950/40 p-4 text-left transition hover:border-glow/25 hover:bg-white/[0.06]"
+              @click="applySubjectLibraryCharacter(element.id)"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-medium text-white">{{ element.name }}</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-300">{{ studio.renderLibraryElementDescription(element) }}</p>
+                </div>
+                <span class="rounded-full border border-glow/20 bg-glow/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-glow">
+                  {{ t(`library.${element.type}`) }}
+                </span>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <ChipTag v-for="tag in element.tags.slice(0, 2)" :key="`${element.id}-${tag}`" :label="tag" />
+              </div>
+            </button>
+          </div>
+          <p
+            v-else
+            class="mt-5 rounded-[22px] border border-dashed border-white/10 bg-white/[0.04] px-4 py-4 text-sm leading-6 text-slate-400"
+          >
+            {{ t('builder.libraryDialog.empty') }}
+          </p>
+        </div>
+      </div>
 
       <section class="relative z-0 glass-panel rounded-[30px] p-5 md:p-6">
         <div class="mb-4">

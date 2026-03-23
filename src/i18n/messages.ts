@@ -476,6 +476,24 @@ export const messages = {
         empty: 'No additional character yet. Add one to clarify group staging, relationships and spatial balance.',
         additionalCount: 'additional characters',
       },
+      libraryDialog: {
+        loadFromLibrary: 'Load from library',
+        addFromLibrary: 'Add from library',
+        subjectTitle: 'Load a subject from your library',
+        subjectSubtitle: 'Choose a saved character to prefill the main subject instantly.',
+        secondaryTitle: 'Add a secondary character from your library',
+        secondarySubtitle: 'Choose a saved character to add it directly to the scene cast.',
+        locationTitle: 'Load a place from your library',
+        locationSubtitle: 'Choose a saved place to prefill the place stage instantly.',
+        sceneTitle: 'Load a scene from your library',
+        sceneSubtitle: 'Choose a saved scene block to enrich the emotional and narrative direction.',
+        compositionTitle: 'Load a composition from your library',
+        compositionSubtitle:
+          'Choose a saved composition block to prefill style, lighting, framing and capture choices.',
+        detailTitle: 'Add a detail from your library',
+        detailSubtitle: 'Choose a saved detail to add it directly to the current scene details.',
+        empty: 'No saved library element matches this search yet.',
+      },
       suggestions: {
         title: 'Targeted enrichments',
         subtitle: 'Small creative pushes that deepen the scene without redirecting it completely.',
@@ -1318,6 +1336,28 @@ export const messages = {
         mainSubjectReference: 'Sujet principal',
         empty: 'Aucun personnage supplementaire pour le moment. Ajoutez-en pour clarifier la mise en scene, les relations et l equilibre spatial.',
         additionalCount: 'autres personnages',
+      },
+      libraryDialog: {
+        loadFromLibrary: 'Charger depuis la bibliotheque',
+        addFromLibrary: 'Ajouter depuis la bibliotheque',
+        subjectTitle: 'Charger un sujet depuis la bibliotheque',
+        subjectSubtitle:
+          'Choisissez un personnage sauvegarde pour pre-remplir instantanement le sujet principal.',
+        secondaryTitle: 'Ajouter un personnage secondaire depuis la bibliotheque',
+        secondarySubtitle:
+          'Choisissez un personnage sauvegarde pour l ajouter directement a la distribution de la scene.',
+        locationTitle: 'Charger un lieu depuis la bibliotheque',
+        locationSubtitle: 'Choisissez un lieu sauvegarde pour pre-remplir instantanement l etape Lieu.',
+        sceneTitle: 'Charger une scene depuis la bibliotheque',
+        sceneSubtitle:
+          'Choisissez un bloc de scene sauvegarde pour enrichir la direction emotionnelle et narrative.',
+        compositionTitle: 'Charger une composition depuis la bibliotheque',
+        compositionSubtitle:
+          'Choisissez un bloc de composition sauvegarde pour pre-remplir style, lumiere, cadrage et capture.',
+        detailTitle: 'Ajouter un detail depuis la bibliotheque',
+        detailSubtitle:
+          'Choisissez un detail sauvegarde pour l ajouter directement aux details de la scene.',
+        empty: 'Aucun element de bibliotheque ne correspond encore a cette recherche.',
       },
       suggestions: {
         title: 'Enrichissements cibles',
